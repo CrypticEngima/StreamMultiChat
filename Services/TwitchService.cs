@@ -3,6 +3,7 @@ using StreamMultiChat.Blazor.Events;
 using StreamMultiChat.Blazor.Settings;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
@@ -18,8 +19,6 @@ namespace StreamMultiChat.Blazor.Services
 		private readonly ILogger<TwitchService> _logger;
 		private TwitchClient _client;
 		private bool _correctlyConnected = false;
-		//private List<string> _channels = new List<string>();
-		//private List<JoinedChannel> _channels = new List<JoinedChannel>();
 
 		public bool _connected => _client.IsConnected;
 
@@ -29,8 +28,6 @@ namespace StreamMultiChat.Blazor.Services
 		{
 			_settings = settings;
 			_logger = logger;
-
-
 
 			CreateClient();
 			if (_client != null)
@@ -55,9 +52,8 @@ namespace StreamMultiChat.Blazor.Services
 			_client.Disconnect();
 		}
 
-		public void JoinChannel(string channel)
+		public async Task JoinChannel(string channel)
 		{
-
 			if (_correctlyConnected)
 			{
 				var clientChannel = _client.JoinedChannels.Where(c => c.Channel.ToLower() == channel.ToLower()).FirstOrDefault();
@@ -69,11 +65,10 @@ namespace StreamMultiChat.Blazor.Services
 			}
 			else
 			{
-				System.Threading.Thread.Sleep(1000);
-				JoinChannel(channel);
+				await Task.Delay(1000);
+				await JoinChannel(channel);
 			}
 		}
-
 
 		private void MessageReceived(ChatMessageReceivedEventArgs e)
 		{
@@ -155,7 +150,6 @@ namespace StreamMultiChat.Blazor.Services
 					));
 
 			MessageReceived(eventArgs);
-
 		}
 	}
 }

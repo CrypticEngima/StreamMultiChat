@@ -82,14 +82,11 @@
 
 	}
 
-	Task JoinChannels()
+	async Task JoinChannels()
 	{
 		foreach (var channel in channels)
 		{
-			ChatService.JoinChannel(channel);
+			await ChatService.JoinChannel(channel);
 		}
-		return Task.CompletedTask;
-
 	}
-
 }
