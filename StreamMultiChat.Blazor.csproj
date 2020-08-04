@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+	<TargetFramework>netcoreapp3.1</TargetFramework>
+	<UserSecretsId>87900c0a-6f6b-4151-8a26-7cdb71a7330d</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="wwwroot\css\bootstrap\**" />
+    <Compile Remove="wwwroot\css\open-iconic\**" />
+    <Content Remove="wwwroot\css\bootstrap\**" />
+    <Content Remove="wwwroot\css\open-iconic\**" />
+    <EmbeddedResource Remove="wwwroot\css\bootstrap\**" />
+    <EmbeddedResource Remove="wwwroot\css\open-iconic\**" />
+    <None Remove="wwwroot\css\bootstrap\**" />
+    <None Remove="wwwroot\css\open-iconic\**" />
+  </ItemGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.1.6" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.6" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.6" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.6" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.6" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.6" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.6" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.6" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.6" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.6" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.6" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.6" />
+		<PackageReference Include="TwitchLib.Client" Version="3.1.5" />
+	</ItemGroup>
+	
+</Project>

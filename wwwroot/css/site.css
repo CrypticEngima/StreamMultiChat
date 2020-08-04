@@ -1,0 +1,23 @@
+:root {
+	--purple: #AA55FF;
+	--green: #1FA70A;
+	--smokey-black: #14110F;
+}
+app{
+	width:100%;
+}
+body {
+
+}
+
+div.top-row{
+	height:2rem;
+	background-color:var(--green);
+	width:100%;
+}
+
+ul{
+	height:40rem;
+	overflow-y:auto;
+	list-style-type:none;
+}
