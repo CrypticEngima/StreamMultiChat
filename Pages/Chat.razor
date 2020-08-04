@@ -46,7 +46,7 @@
 
 	async void ReceiveMessageHandler(object sender,StreamMultiChat.Blazor.Events.ChatMessageReceivedEventArgs e)
 	{
-		var message = $"{DateTime.Now:t}[{e.ChatMessage.Channel}] ({e.ChatMessage.Username}) {e.ChatMessage.Message}";
+		var message = $"{DateTime.Now:t}   [{e.ChatMessage.Channel}] ({e.ChatMessage.Username}) : {e.ChatMessage.Message}";
 		await ReceiveMessage(message);
 	}
 

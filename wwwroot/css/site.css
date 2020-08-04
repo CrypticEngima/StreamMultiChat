@@ -1,23 +1,84 @@
+@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+
 :root {
-	--purple: #AA55FF;
-	--green: #1FA70A;
-	--smokey-black: #14110F;
+	--purple: #7d5bbe;
+	--white: #fff;
+	--black: #121212;
 }
-app{
-	width:100%;
+
+app {
+	width: 100%;
 }
+
 body {
-
+	background-color: var(--black);
+	color: var(--white);
+	line-height: 1.5rem;
 }
 
-div.top-row{
-	height:2rem;
-	background-color:var(--green);
+#blazor-error-ui {
+	background: lightyellow;
+	bottom: 0;
+	box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+	display: none;
+	left: 0;
+	padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+	position: fixed;
+	width: 100%;
+	z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+	cursor: pointer;
+	position: absolute;
+	right: 0.75rem;
+	top: 0.5rem;
+}
+
+div.top-row {
+	height: 2rem;
+	background-color: var(--purple);
+	width: 100%;
+}
+
+
+.btn-primary {
+	color: #fff;
+	background-color: #1b6ec2;
+	border-color: #1861ac;
+}
+
+/*Index*/
+h1 {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+form#formChat {
+	margin-top: 2rem;
+}
+
+input#channels {
+	width: 100%;
+}
+
+button#chatsubmit {
+	width: 50%;
+	margin-top: 1rem;
+}
+
+/*Chat*/
+
+ul {
+	height: 30rem;
+	overflow-y: auto;
+	list-style-type: none;
+	border: .2rem solid var(--purple);
+	padding: 0;
+}
+
+li{
 	width:100%;
 }
 
-ul{
-	height:40rem;
-	overflow-y:auto;
-	list-style-type:none;
-}
+

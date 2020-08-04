@@ -1,15 +1,16 @@
 ﻿@page "/"
 
 <h1>Welcome To Stream Multi Chat</h1>
-<div>
-	Stream Multi Chat allows you to connect to more than one twitch stream chat at once. You can also send messages to one or all channels to make life easy.
-	
-</div>
-<div>
-	Please enter the channels you wish to connect to in the box below using commas to seperate them e.g. channel1,channel2,channel3,etc
-</div>
+<div id="indexContent">
+	<div>
+		Stream Multi Chat allows you to connect to more than one twitch stream chat at once. You can also send messages to one or all channels to make life easy.
+	</div>
+	<div>
+		Please enter the channels you wish to connect to in the box below using commas to seperate them e.g. channel1,channel2,channel3,etc
+	</div>
 
-<form action="/chat" method="get">
-	<input type="text" id="channels" name="channels"/>
-	<button type="submit">Chat</button>
-</form>
+	<form action="/chat" class="text-center" method="get" id="formChat">
+		<input class="form-control" type="text" id="channels" name="channels" />
+		<button class="btn btn-primary" id="chatsubmit" name="chatsubmit" type="submit">Chat</button>
+	</form>
+</div>
