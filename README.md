@@ -10,4 +10,4 @@ Currently your twitch username and oAuth token are required in appsettings.json 
 
 ## Usage
 On the main page when you start type in the channels you wish to connect to as comma seperated values and then click chat button.
-Once in the chat page select the channel you wish to chat in 
+Once in the chat page use the select box to set the channel you wish to chat in.
