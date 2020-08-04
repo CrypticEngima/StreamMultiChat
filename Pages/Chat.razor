@@ -1,5 +1,4 @@
 ﻿@page "/chat"
-@using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.AspNetCore.WebUtilities
 @inject NavigationManager NavManager
 @inject StreamMultiChat.Blazor.Services.TwitchService ChatService
@@ -54,7 +53,6 @@
 	{
 		messages.Add(message);
 		await base.InvokeAsync(StateHasChanged);
-		//return Task.CompletedTask;
 	}
 
 	Task SendMessage()

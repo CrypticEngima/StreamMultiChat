@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using StreamMultiChat.Blazor.Events;
 using StreamMultiChat.Blazor.Settings;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
@@ -18,7 +17,8 @@ namespace StreamMultiChat.Blazor.Services
 		private readonly TwitchSettings _settings;
 		private readonly ILogger<TwitchService> _logger;
 		private TwitchClient _client;
-		private List<string> _channels = new List<string>();
+		private bool _correctlyConnected = false;
+		//private List<string> _channels = new List<string>();
 		//private List<JoinedChannel> _channels = new List<JoinedChannel>();
 
 		public bool _connected => _client.IsConnected;
@@ -31,7 +31,7 @@ namespace StreamMultiChat.Blazor.Services
 			_logger = logger;
 
 
-			
+
 			CreateClient();
 			if (_client != null)
 			{
@@ -52,18 +52,26 @@ namespace StreamMultiChat.Blazor.Services
 
 		public void Disconnect()
 		{
-
 			_client.Disconnect();
 		}
 
 		public void JoinChannel(string channel)
 		{
-			//if (!_channels.Contains(channel))
-			//{
-				_client.JoinChannel(channel);
-				_channels.Add(channel);
-				_logger.LogInformation($"Joined channel : {channel}");
-			//}
+
+			if (_correctlyConnected)
+			{
+				var clientChannel = _client.JoinedChannels.Where(c => c.Channel.ToLower() == channel.ToLower()).FirstOrDefault();
+				if (clientChannel is null)
+				{
+					_client.JoinChannel(channel);
+					_logger.LogInformation($"Joined channel : {channel}");
+				}
+			}
+			else
+			{
+				System.Threading.Thread.Sleep(1000);
+				JoinChannel(channel);
+			}
 		}
 
 
@@ -75,18 +83,16 @@ namespace StreamMultiChat.Blazor.Services
 
 		public void SendMessage(string message)
 		{
-			if (_channels != null)
+			foreach (var channel in _client.JoinedChannels)
 			{
-				foreach (var channel in _channels)
-				{
-					SendMessage(channel, message);
-				}
+				SendMessage(channel.Channel, message);
 			}
 		}
 
 		public void SendMessage(string channel, string message)
 		{
 			_client.SendMessage(channel, message);
+			_logger.LogInformation($"Sending to {channel} the Message : {message}");
 		}
 
 
@@ -124,13 +130,7 @@ namespace StreamMultiChat.Blazor.Services
 		private void OnConnected(object sender, OnConnectedArgs args)
 		{
 			_logger.LogInformation($"Connection To Twitch Started.");
-			//if (_channels != null)
-			//{
-			//	foreach (var channel in _channels)
-			//	{
-			//		JoinChannel(channel);
-			//	}
-			//}
+			_correctlyConnected = true;
 		}
 
 		private void MessageReceived(object sender, OnMessageReceivedArgs args)
