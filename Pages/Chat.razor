@@ -2,91 +2,95 @@
 @using Microsoft.AspNetCore.WebUtilities
 @inject NavigationManager NavManager
 @inject StreamMultiChat.Blazor.Services.TwitchService ChatService
+	<main>
+		<h1>Chat</h1>
 
-<h3>Chat</h3>
+		<div class="response_output">
+			<ul id="messagesList">
+				@foreach (var message in messages)
+				{
+					<li>@message</li>
+				}
+			</ul>
+		</div>
+		<div class="">
+			<label for="sel_send">Channel to send message.</label>
+			<select id="sel_send" class="form-control d-flex" name="sel_send" @bind="selectedValue">
+				<option value="" disabled selected hidden>Please choose channel...</option>
+				<option value="all">All</option>
+				@foreach (var channel in channels)
+				{
+					<option value=@channel>@channel</option>
+				}
+			</select>
+			<label for="txt_send">Message to send.</label>
+			<input type="text" class="form-control" id="txt_send" name="txt_send" @bind="message" placeholder="Message" />
+			<input type="button" class="btn btn-primary" value="Send" id="btn_send" name="btn_send" @onclick="@SendMessage" />
+		</div>
+	</main>
 
-<div class="response_output">
-	<ul id="messagesList">
-		@foreach (var message in messages)
+	@code {
+		string message = "";
+		string selectedValue = "";
+		string[] channels = new string[] { };
+
+		IList<string> messages = new List<string>();
+
+		protected override async Task OnInitializedAsync()
 		{
-			<li>@message</li>
-		}
-	</ul>
-</div>
-<div class="">
-	<select id="sel_send" class="form-control d-flex" name="sel_send" @bind="selectedValue">
-		<option value="all">All</option>
-		@foreach (var channel in channels)
-		{
-			<option value=@channel>@channel</option>
-		}
-	</select>
-	<input type="text" class="form-control" id="txt_send" @bind="message" placeholder="Message" />
-	<input type="button" class="btn btn-primary" value="Send" id="btn_send" name="btn_send" @onclick="@SendMessage" />
-</div>
+			base.OnInitialized();
 
-@code {
-	string message = "";
-	string selectedValue = "";
-	string[] channels = new string[] { };
+			ChatService.OnMessageReceived += ReceiveMessageHandler;
+			ChatService.Connect();
 
-	IList<string> messages = new List<string>();
-
-	protected override async Task OnInitializedAsync()
-	{
-		base.OnInitialized();
-
-		ChatService.OnMessageReceived += ReceiveMessageHandler;
-		ChatService.Connect();
-
-		await FillSelect();
-		await JoinChannels();
-	}
-
-	async void ReceiveMessageHandler(object sender,StreamMultiChat.Blazor.Events.ChatMessageReceivedEventArgs e)
-	{
-		var message = $"{DateTime.Now:t}   [{e.ChatMessage.Channel}] ({e.ChatMessage.Username}) : {e.ChatMessage.Message}";
-		await ReceiveMessage(message);
-	}
-
-	async Task ReceiveMessage(string message)
-	{
-		messages.Add(message);
-		await base.InvokeAsync(StateHasChanged);
-	}
-
-	Task SendMessage()
-	{
-		if (selectedValue.ToLowerInvariant() == "all")
-		{
-			ChatService.SendMessage(message);
-		}
-		else
-		{
-			ChatService.SendMessage(selectedValue, message);
+			await FillSelect();
+			await JoinChannels();
 		}
 
-		message = "";
-		return Task.CompletedTask;
-	}
-
-	Task FillSelect()
-	{
-		var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
-		if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("channels", out var _channels))
+		async void ReceiveMessageHandler(object sender, StreamMultiChat.Blazor.Events.ChatMessageReceivedEventArgs e)
 		{
-			channels = _channels.ToString().Split(',');
+			var message = $"{DateTime.Now:t}   [{e.ChatMessage.Channel}] ({e.ChatMessage.Username}) : {e.ChatMessage.Message}";
+			await ReceiveMessage(message);
 		}
-		StateHasChanged();
-		return Task.CompletedTask;
 
-	}
-
-	async Task JoinChannels()
-	{
-		foreach (var channel in channels)
+		async Task ReceiveMessage(string message)
 		{
-			await ChatService.JoinChannel(channel);
+			messages.Add(message);
+			await base.InvokeAsync(StateHasChanged);
+		}
+
+		Task SendMessage()
+		{
+			if (selectedValue.ToLowerInvariant() == "all")
+			{
+				ChatService.SendMessage(message);
+			}
+			else
+			{
+				ChatService.SendMessage(selectedValue, message);
+			}
+
+			message = "";
+			return Task.CompletedTask;
+		}
+
+		Task FillSelect()
+		{
+			var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+			if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("channels", out var _channels))
+			{
+				channels = _channels.ToString().Split(',');
+			}
+			StateHasChanged();
+			return Task.CompletedTask;
+
+		}
+
+		async Task JoinChannels()
+		{
+			foreach (var channel in channels)
+			{
+				await ChatService.JoinChannel(channel);
+			}
 		}
 	}
-}

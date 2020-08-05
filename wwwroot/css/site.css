@@ -4,6 +4,14 @@
 	--purple: #7d5bbe;
 	--white: #fff;
 	--black: #121212;
+	--alternateBlack: #1f1f1c;
+	--green: #78bc61;
+	--text-minFontSize: 16px;
+	--text-maxFontSize: 100px;
+	--text-scaler: 2vw;
+	--h1-minFontSize: 25px;
+	--h1-maxFontSize: 200px;
+	--h1-scaler: 4vw;
 }
 
 app {
@@ -13,7 +21,9 @@ app {
 body {
 	background-color: var(--black);
 	color: var(--white);
-	line-height: 1.5rem;
+	line-height: 1.5em;
+	font-size:16px;
+	font-size: clamp( var(--text-minFontSize), var(--text-scaler), var(--text-maxFontSize) );
 }
 
 #blazor-error-ui {
@@ -47,13 +57,23 @@ div.top-row {
 	background-color: #1b6ec2;
 	border-color: #1861ac;
 }
-
-/*Index*/
-h1 {
-	margin-left: auto;
-	margin-right: auto;
+input {
+	/*margin-top: 1rem;*/
+	border: .2rem solid var(--green) !important;
+	font-size: clamp( var(--text-minFontSize), var(--text-scaler), var(--text-maxFontSize) );
 }
 
+h1 {
+	text-align:center;
+	font-size:25px;
+	font-size: clamp( var(--h1-minFontSize), var(--h1-scaler), var(--h1-maxFontSize) );
+}
+
+main div{
+	margin-top:1rem;
+}
+
+/*Index*/
 form#formChat {
 	margin-top: 2rem;
 }
@@ -81,4 +101,7 @@ li{
 	width:100%;
 }
 
+li:nth-child(odd) {
+	background-color:var(--alternateBlack);
+}
 
