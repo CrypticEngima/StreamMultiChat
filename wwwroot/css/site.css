@@ -16,14 +16,16 @@
 
 app {
 	width: 100%;
+	
 }
 
 body {
 	background-color: var(--black);
 	color: var(--white);
 	line-height: 1.5em;
-	font-size:16px;
+	font-size: 16px;
 	font-size: clamp( var(--text-minFontSize), var(--text-scaler), var(--text-maxFontSize) );
+	min-width: 306px;
 }
 
 #blazor-error-ui {
@@ -63,7 +65,7 @@ input[type=text],select,select:checked,option {
 	font-size: clamp( var(--text-minFontSize), var(--text-scaler), var(--text-maxFontSize) )!important;
 }
 
-input[type=text], input {
+input[type=text], input, select {
 	/*Important forces override of scss style*/
 	border: .2rem solid var(--green) !important;
 }
@@ -110,3 +112,6 @@ li:nth-child(odd) {
 	background-color:var(--alternateBlack);
 }
 
+div#chatForm{
+	text-align:center;
+}
