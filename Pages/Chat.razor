@@ -15,7 +15,7 @@
 		</div>
 		<div class="">
 			<label for="sel_send">Channel to send message.</label>
-			<select id="sel_send" class="form-control d-flex" name="sel_send" @bind="selectedValue">
+			<select id="sel_send" class="form-control d-flex" name="sel_send" @bind="selectedValue" tabindex="1">
 				<option value="" disabled selected hidden>Please choose channel...</option>
 				<option value="all">All</option>
 				@foreach (var channel in channels)
@@ -24,8 +24,8 @@
 				}
 			</select>
 			<label for="txt_send">Message to send.</label>
-			<input type="text" class="form-control" id="txt_send" name="txt_send" @bind="message" placeholder="Message" />
-			<input type="button" class="btn btn-primary" value="Send" id="btn_send" name="btn_send" @onclick="@SendMessage" />
+			<input type="text" class="form-control" id="txt_send" name="txt_send" @bind="message" placeholder="Message" tabindex="2"@onkeydown="@CheckForSend"/>
+			<input type="button" class="btn btn-primary" value="Send" id="btn_send" name="btn_send" @onclick="@SendMessage" tabindex="3"/>
 		</div>
 	</main>
 
@@ -92,5 +92,15 @@
 			{
 				await ChatService.JoinChannel(channel);
 			}
+		}
+
+		Task CheckForSend(KeyboardEventArgs e)
+		{
+			if (e.Key == "Enter" && !e.ShiftKey)
+			{
+				SendMessage();
+			}
+
+			return Task.CompletedTask;
 		}
 	}

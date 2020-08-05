@@ -57,13 +57,13 @@ div.top-row {
 	background-color: #1b6ec2;
 	border-color: #1861ac;
 }
-input[type="text"],select,select:checked,option {
+input[type=text],select,select:checked,option {
 	font-size:16px;
 	/*Important forces override of scss style*/
 	font-size: clamp( var(--text-minFontSize), var(--text-scaler), var(--text-maxFontSize) )!important;
 }
 
-select, input {
+input[type=text], input {
 	/*Important forces override of scss style*/
 	border: .2rem solid var(--green) !important;
 }
@@ -87,7 +87,7 @@ input#channels {
 	width: 100%;
 }
 
-button#chatsubmit {
+button#chatsubmit,input#btn_send {
 	width: 50%;
 	margin-top: 1rem;
 }
