@@ -2,6 +2,7 @@
 using StreamMultiChat.Blazor.Events;
 using StreamMultiChat.Blazor.Settings;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TwitchLib.Client;
@@ -76,18 +77,24 @@ namespace StreamMultiChat.Blazor.Services
 			handler.Invoke(this, e);
 		}
 
-		public void SendMessage(string message)
+		public List<ChatMessage> SendMessage(string message)
 		{
+			var chatMessages = new List<ChatMessage>();
+
 			foreach (var channel in _client.JoinedChannels)
 			{
 				SendMessage(channel.Channel, message);
+				chatMessages.Add(new ChatMessage(message, false, false, false, false, false, 0, null, channel.Channel, 0, false, null, _settings.Username));
 			}
+
+			return chatMessages;
 		}
 
-		public void SendMessage(string channel, string message)
+		public ChatMessage SendMessage(string channel, string message)
 		{
 			_client.SendMessage(channel, message);
 			_logger.LogInformation($"Sending to {channel} the Message : {message}");
+			return new ChatMessage(message, false, false, false, false, false, 0, null, channel, 0, false, null, _settings.Username);
 		}
 
 
