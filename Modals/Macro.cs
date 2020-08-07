@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace StreamMultiChat.Blazor.Modals
+{
+	public struct Macro
+	{
+		public string Name { get; set; }
+		public string Command { get; set; }
+		public string Response { get; set; }
+		public bool IsEnabled { get; set; }
+	}
+}

@@ -1,0 +1,39 @@
+﻿<div>
+	<input type=checkbox @bind="IsEnabled" />
+	<input type=text name="name" @bind="Name"/>
+	<input type=text name="command"@bind="Command"/>
+	<input type=text name="response" @bind="Response"/>
+	<button @onclick="(Submit)" class="btn btn-primary">Submit</button>
+</div>
+
+@code {
+	[CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+	[Parameter] public Macro Macro { get; set; }
+	bool IsEnabled;
+	string Name;
+	string Command;
+	string Response;
+
+	protected override Task OnInitializedAsync()
+	{
+		IsEnabled = Macro.IsEnabled;
+		Name = Macro.Name;
+		Command = Macro.Command;
+		Response = Macro.Response;
+
+		return Task.CompletedTask;
+	}
+
+	void Submit()
+	{
+		var macroToReturn = new Macro
+		{
+			IsEnabled = IsEnabled,
+			Name = Name,
+			Command = Command,
+			Response = Response
+		};
+
+		BlazoredModal.Close(ModalResult.Ok(macroToReturn));
+	}
+}

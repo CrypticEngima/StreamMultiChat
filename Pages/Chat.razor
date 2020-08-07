@@ -15,8 +15,9 @@
 		</ul>
 	</div>
 	<div id="controlButtons">
-		<button @onclick="@(() => ShowJoinModal())" class="btn btn-primary">Join Channel</button>
-		<button @onclick="@(() => ShowLeaveModal())" class="btn btn-primary">Leave Channel</button>
+		<button @onclick="@(() => ShowJoinDialog())" class="btn btn-primary">Join Channel</button>
+		<button @onclick="@(() => ShowLeaveDialog())" class="btn btn-primary">Leave Channel</button>
+		<button @onclick="@(() => ShowMacroManagementDialog())" class="btn btn-primary">EditMacros</button>
 	</div>
 	<div id="chatForm">
 		<label for="sel_send">Channel to send message.</label>
@@ -42,6 +43,7 @@
 	IList<string> Channels = new List<string> { };
 
 	IList<string> Messages = new List<string>();
+	List<Macro> Macros = new List<Macro>();
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -125,9 +127,9 @@
 		}
 	}
 
-	async void ShowJoinModal()
+	async void ShowJoinDialog()
 	{
-		var modalResponse = Modal.Show<JoinChannelModal>("Join Channel");
+		var modalResponse = Modal.Show<JoinChannelDialog>("Join Channel");
 		var result = await modalResponse.Result;
 
 
@@ -143,12 +145,12 @@
 		}
 	}
 
-	async void ShowLeaveModal()
+	async void ShowLeaveDialog()
 	{
 		var parameters = new ModalParameters();
 		parameters.Add(nameof(Channels), Channels);
 
-		var modalResponse = Modal.Show<LeaveChannelModal>("Leave Channel", parameters);
+		var modalResponse = Modal.Show<LeaveChannelDialog>("Leave Channel", parameters);
 		var result = await modalResponse.Result;
 
 
@@ -156,6 +158,22 @@
 		{
 			await ChatService.LeaveChannel(result.Data.ToString());
 			Channels.Remove(result.Data.ToString());
+		}
+		await base.InvokeAsync(StateHasChanged);
+	}
+
+	async void ShowMacroManagementDialog()
+	{
+		var parameters = new ModalParameters();
+		parameters.Add(nameof(Macros), Macros);
+
+		var modalResponse = Modal.Show<MacroManagementDialog>("Macro Management",parameters);
+		var result = await modalResponse.Result;
+
+
+		if (!result.Cancelled)
+		{
+			Macros = (List<Macro>)result.Data;
 		}
 		await base.InvokeAsync(StateHasChanged);
 	}
