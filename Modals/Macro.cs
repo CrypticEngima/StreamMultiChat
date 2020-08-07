@@ -11,5 +11,10 @@ namespace StreamMultiChat.Blazor.Modals
 		public string Command { get; set; }
 		public string Response { get; set; }
 		public bool IsEnabled { get; set; }
+
+		public bool CanRun(string command)
+		{
+			return  IsEnabled && Command == command;
+		}
 	}
 }

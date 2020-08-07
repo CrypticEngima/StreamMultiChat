@@ -78,7 +78,7 @@
 	{
 		if (SelectedValue.ToLowerInvariant() == "all")
 		{
-			var returnMessages = ChatService.SendMessage(Message);
+			var returnMessages = ChatService.SendMessage(CheckMacros(Message));
 			foreach(var item in returnMessages)
 			{
 				var msg = await FormatMessage(item);
@@ -87,12 +87,24 @@
 		}
 		else
 		{
-			var returnMessage = ChatService.SendMessage(SelectedValue, Message);
+			var returnMessage = ChatService.SendMessage(SelectedValue, CheckMacros(Message));
 			var msg = await FormatMessage(returnMessage);
 			Messages.Add(msg);
 		}
 
 		Message = "";
+	}
+
+	string CheckMacros(string message)
+	{
+		foreach (var macro in Macros)
+		{
+			if (macro.CanRun(message))
+			{
+				return macro.Response;
+			}
+		}
+		return message;
 	}
 
 	Task FillSelect()
