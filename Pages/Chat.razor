@@ -1,41 +1,49 @@
 ﻿@page "/chat"
-@using Microsoft.AspNetCore.WebUtilities
-@using StreamMultiChat.Blazor.Events
+
 @inject NavigationManager NavManager
-@inject StreamMultiChat.Blazor.Services.TwitchService ChatService
+@inject TwitchService ChatService
+
 <main>
 	<h1>Chat</h1>
 
 	<div class="response_output">
 		<ul id="messagesList">
-			@foreach (var message in messages)
+			@foreach (var message in Messages)
 			{
 				<li>@message</li>
 			}
 		</ul>
 	</div>
+	<div id="controlButtons">
+		<button @onclick="@(() => ShowJoinDialog())" class="btn btn-primary">Join Channel</button>
+		<button @onclick="@(() => ShowLeaveDialog())" class="btn btn-primary">Leave Channel</button>
+		<button @onclick="@(() => ShowMacroManagementDialog())" class="btn btn-primary">EditMacros</button>
+	</div>
 	<div id="chatForm">
 		<label for="sel_send">Channel to send message.</label>
-		<select id="sel_send" class="form-control d-flex" name="sel_send" @bind="selectedValue" tabindex="1">
+		<select id="sel_send" class="form-control d-flex" name="sel_send" @bind="SelectedValue" >
 			<option value="" disabled selected hidden>Please choose channel...</option>
 			<option value="all">All</option>
-			@foreach (var channel in channels)
+			@foreach (var channel in Channels)
 			{
 				<option value=@channel>@channel</option>
 			}
 		</select>
 		<label for="txt_send">Message to send.</label>
-		<input type="text" class="form-control" id="txt_send" name="txt_send" @bind="message" placeholder="Message" tabindex="2" @onkeydown="@CheckForSend" />
-		<input type="button" class="btn btn-primary" value="Send" id="btn_send" name="btn_send" @onclick="@SendMessage" tabindex="3" />
+		<input type="text" class="form-control" id="txt_send" name="txt_send" @bind="Message" placeholder="Message" @onkeydown="@CheckForSend" />
+		<input type="button" class="btn btn-primary" value="Send" id="btn_send" name="btn_send" @onclick="@SendMessage" />
 	</div>
 </main>
 
 @code {
-	string message = "";
-	string selectedValue = "";
-	string[] channels = new string[] { };
+	[CascadingParameter] public IModalService Modal { get; set; }
 
-	IList<string> messages = new List<string>();
+	string Message = "";
+	string SelectedValue = "";
+	IList<string> Channels = new List<string> { };
+
+	IList<string> Messages = new List<string>();
+	List<Macro> Macros = new List<Macro>();
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -48,7 +56,7 @@
 		await JoinChannels();
 	}
 
-	async void ReceiveMessageHandler(object sender, StreamMultiChat.Blazor.Events.ChatMessageReceivedEventArgs e)
+	async void ReceiveMessageHandler(object sender, ChatMessageReceivedEventArgs e)
 	{
 		var msg = await FormatMessage(e.ChatMessage);
 		await ReceiveMessage(msg);
@@ -56,7 +64,7 @@
 
 	async Task ReceiveMessage(string message)
 	{
-		messages.Add(message);
+		Messages.Add(message);
 		await base.InvokeAsync(StateHasChanged);
 	}
 
@@ -68,23 +76,35 @@
 
 	async Task SendMessage()
 	{
-		if (selectedValue.ToLowerInvariant() == "all")
+		if (SelectedValue.ToLowerInvariant() == "all")
 		{
-			var returnMessages = ChatService.SendMessage(message);
+			var returnMessages = ChatService.SendMessage(CheckMacros(Message));
 			foreach(var item in returnMessages)
 			{
 				var msg = await FormatMessage(item);
-				messages.Add(msg);
+				Messages.Add(msg);
 			}
 		}
 		else
 		{
-			var returnMessage = ChatService.SendMessage(selectedValue, message);
+			var returnMessage = ChatService.SendMessage(SelectedValue, CheckMacros(Message));
 			var msg = await FormatMessage(returnMessage);
-			messages.Add(msg);
+			Messages.Add(msg);
 		}
 
-		message = "";
+		Message = "";
+	}
+
+	string CheckMacros(string message)
+	{
+		foreach (var macro in Macros)
+		{
+			if (macro.CanRun(message))
+			{
+				return macro.Response;
+			}
+		}
+		return message;
 	}
 
 	Task FillSelect()
@@ -92,7 +112,11 @@
 		var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
 		if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("channels", out var _channels))
 		{
-			channels = _channels.ToString().Split(',');
+			var chans = _channels.ToString().Split(',');
+			foreach (var item in chans)
+			{
+				Channels.Add(item);
+			}
 		}
 		StateHasChanged();
 		return Task.CompletedTask;
@@ -101,7 +125,7 @@
 
 	async Task JoinChannels()
 	{
-		foreach (var channel in channels)
+		foreach (var channel in Channels)
 		{
 			await ChatService.JoinChannel(channel);
 		}
@@ -113,5 +137,56 @@
 		{
 			await SendMessage();
 		}
+	}
+
+	async void ShowJoinDialog()
+	{
+		var modalResponse = Modal.Show<JoinChannelDialog>("Join Channel");
+		var result = await modalResponse.Result;
+
+
+		if (!result.Cancelled)
+		{
+			var chans = result.Data.ToString().Split(',');
+			foreach (var item in chans)
+			{
+				await ChatService.JoinChannel(item);
+				Channels.Add(item);
+			}
+			await base.InvokeAsync(StateHasChanged);
+		}
+	}
+
+	async void ShowLeaveDialog()
+	{
+		var parameters = new ModalParameters();
+		parameters.Add(nameof(Channels), Channels);
+
+		var modalResponse = Modal.Show<LeaveChannelDialog>("Leave Channel", parameters);
+		var result = await modalResponse.Result;
+
+
+		if (!result.Cancelled)
+		{
+			await ChatService.LeaveChannel(result.Data.ToString());
+			Channels.Remove(result.Data.ToString());
+		}
+		await base.InvokeAsync(StateHasChanged);
+	}
+
+	async void ShowMacroManagementDialog()
+	{
+		var parameters = new ModalParameters();
+		parameters.Add(nameof(Macros), Macros);
+
+		var modalResponse = Modal.Show<MacroManagementDialog>("Macro Management",parameters);
+		var result = await modalResponse.Result;
+
+
+		if (!result.Cancelled)
+		{
+			Macros = (List<Macro>)result.Data;
+		}
+		await base.InvokeAsync(StateHasChanged);
 	}
 }

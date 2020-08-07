@@ -1,27 +1,42 @@
 {
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:63678",
-      "sslPort": 44323
-    }
-  },
-  "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "StreamMultiChat.Blazor": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "applicationUrl": "https://localhost:5001;http://localhost:5000",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    }
-  }
+	"iisSettings": {
+		"windowsAuthentication": false,
+		"anonymousAuthentication": true,
+		"iisExpress": {
+			"applicationUrl": "http://localhost:63678",
+			"sslPort": 44323
+		}
+	},
+	"profiles": {
+		"IIS Express": {
+			"commandName": "IISExpress",
+			"launchBrowser": true,
+			"environmentVariables": {
+				"ASPNETCORE_ENVIRONMENT": "Development"
+			}
+		},
+		"StreamMultiChat.Blazor": {
+			"commandName": "Project",
+			"launchBrowser": true,
+			"applicationUrl": "https://localhost:5001;http://localhost:5000",
+			"environmentVariables": {
+				"ASPNETCORE_ENVIRONMENT": "Development"
+			}
+		},
+		// dotnet watch run must be run without the Visual Studio debugger using CTRL+F5.
+		"Kestrel (dotnet watch run)": {
+			"commandName": "Executable",
+			"executablePath": "dotnet",
+			"commandLineArgs": "watch run",
+			"workingDirectory": "$(ProjectDir)",
+			"launchBrowser": true,
+			"applicationUrl": "https://localhost:5001;http://localhost:5000",
+			"launchUrl": "https://localhost:5000/",
+			"environmentVariables": {
+				"ASPNETCORE_ENVIRONMENT": "Development",
+				"ASPNETCORE_HTTPS_PORT": "5001"
+			}
+		}
+
+	}
 }

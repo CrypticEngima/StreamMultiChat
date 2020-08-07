@@ -1,3 +1,4 @@
+using Blazored.Modal;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -34,6 +35,7 @@ namespace StreamMultiChat.Blazor
 			services.AddRazorPages();
 			services.AddServerSideBlazor();
 			services.AddSignalR();
+			services.AddBlazoredModal();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

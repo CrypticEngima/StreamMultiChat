@@ -1,0 +1,91 @@
+﻿<div>
+	<button @onclick="Create" class="btn btn-primary">Create</button>
+	<table>
+		<thead>
+			<tr>
+				<th>Enabled</th>
+				<th>Name</th>
+				<th>Command</th>
+				<th>Response</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var macro in Macros)
+			{
+				<tr>
+
+					<td>
+						@if (macro.IsEnabled)
+						{
+							<input type="checkbox" checked />
+						}
+						else
+						{
+							<input type="checkbox" />
+						}
+					</td>
+					<td>@macro.Name</td>
+					<td>@macro.Command</td>
+					<td>@macro.Response</td>
+					<td>
+						<button @onclick="(()=>Edit(macro.Name))" class="btn btn-primary">Edit</button>
+						<button @onclick="(() => Delete(macro.Name))" class="btn btn-primary">Delete</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+	<button @onclick="(()=>BlazoredModal.Close(ModalResult.Ok(Macros)))" class="btn btn-primary">Close</button>
+</div>
+
+@code {
+	[CascadingParameter] public IModalService Modal { get; set; }
+	[CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+	[Parameter] public  List<Macro> Macros { get; set; }
+
+	async Task Create()
+	{
+		var modalResponse = Modal.Show<EditMacroDialog>("Create Macro");
+		var result = await modalResponse.Result;
+
+
+		if (!result.Cancelled)
+		{
+			Macros.Add((Macro)result.Data);
+			await base.InvokeAsync(StateHasChanged);
+		}
+	}
+
+	async Task Edit(string name)
+	{
+		var itemToRemove = Macros.FirstOrDefault(x => x.Name == name);
+		var parameters = new ModalParameters();
+		parameters.Add("Macro", itemToRemove);
+
+		var modalResponse = Modal.Show<EditMacroDialog>("Edit Macro",parameters);
+		var result = await modalResponse.Result;
+
+
+		if (!result.Cancelled)
+		{
+			Macros.Remove(itemToRemove);
+			Macros.Add((Macro)result.Data);
+			await base.InvokeAsync(StateHasChanged);
+		}
+	}
+
+	async Task Delete(string name)
+	{
+		var modalResponse = Modal.Show<ConfirmDialog>();
+		var result = await modalResponse.Result;
+
+
+		if (!result.Cancelled)
+		{
+			var itemToRemove = Macros.FirstOrDefault(x => x.Name == name);
+			Macros.Remove(itemToRemove);
+			await base.InvokeAsync(StateHasChanged);
+		}
+	}
+}

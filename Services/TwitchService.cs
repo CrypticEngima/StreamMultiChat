@@ -62,6 +62,7 @@ namespace StreamMultiChat.Blazor.Services
 				{
 					_client.JoinChannel(channel);
 					_logger.LogInformation($"Joined channel : {channel}");
+					_logger.LogInformation($"Current joined channels Count: {_client.JoinedChannels.Count()}");
 				}
 			}
 			else
@@ -69,6 +70,13 @@ namespace StreamMultiChat.Blazor.Services
 				await Task.Delay(1000);
 				await JoinChannel(channel);
 			}
+		}
+
+		public Task LeaveChannel(string channel)
+		{
+			_client.LeaveChannel(channel);
+			_logger.LogInformation($"Left channel : {channel}");
+			return Task.CompletedTask;
 		}
 
 		private void MessageReceived(ChatMessageReceivedEventArgs e)
