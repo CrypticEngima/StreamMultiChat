@@ -28,6 +28,41 @@ body {
 	min-width: 306px;
 }
 
+div.top-row {
+	height: 2rem;
+	background-color: var(--purple);
+	width: 100%;
+}
+
+
+.btn-primary {
+	color: #fff;
+	background-color: #1b6ec2;
+	border-color: #1861ac;
+}
+
+input[type=text],select,select:checked,option {
+	font-size:16px;
+	/*Important forces override of scss style*/
+	font-size: clamp( var(--text-minFontSize), var(--text-scaler), var(--text-maxFontSize) )!important;
+}
+
+input[type=text], input, select, button {
+	/*Important forces override of scss style*/
+	border: .2rem solid var(--green) !important;
+}
+
+h1 {
+	text-align:center;
+	font-size:25px;
+	font-size: clamp( var(--h1-minFontSize), var(--h1-scaler), var(--h1-maxFontSize) );
+}
+
+main div{
+	margin-top:1rem;
+}
+
+/*Blazor default error*/
 #blazor-error-ui {
 	background: lightyellow;
 	bottom: 0;
@@ -47,37 +82,23 @@ body {
 	top: 0.5rem;
 }
 
-div.top-row {
-	height: 2rem;
-	background-color: var(--purple);
-	width: 100%;
+
+/*Custom Modal*/
+.blazored-modal {
+	background-color: var(--black);
+	color: var(--white);
+	border: .2rem solid var(--purple);
+	text-align: center;
 }
 
-
-.btn-primary {
-	color: #fff;
-	background-color: #1b6ec2;
-	border-color: #1861ac;
-}
-input[type=text],select,select:checked,option {
-	font-size:16px;
-	/*Important forces override of scss style*/
-	font-size: clamp( var(--text-minFontSize), var(--text-scaler), var(--text-maxFontSize) )!important;
+.blazored-modal button {
+	margin-top: 1rem;
+	width: 47%;
 }
 
-input[type=text], input, select {
-	/*Important forces override of scss style*/
-	border: .2rem solid var(--green) !important;
-}
-
-h1 {
-	text-align:center;
-	font-size:25px;
-	font-size: clamp( var(--h1-minFontSize), var(--h1-scaler), var(--h1-maxFontSize) );
-}
-
-main div{
-	margin-top:1rem;
+.blazored-modal .blazored-modal-header {
+	text-align: center;
+	display: block;
 }
 
 /*Index*/
