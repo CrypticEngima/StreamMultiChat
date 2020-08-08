@@ -180,6 +180,6 @@ div#chatForm{
 .editMacro input{
 	width:100%
 }
-.editMacro table, th, td{
-	border:0px;
+.editMacro table, .editMacro th, .editMacro td {
+	border: 0px;
 }
