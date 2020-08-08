@@ -86,20 +86,6 @@ namespace StreamMultiChat.Blazor.Services
 			handler.Invoke(this, e);
 		}
 
-		public List<ChatMessage> SendMessage(string message)
-		{
-			var chatMessages = new List<ChatMessage>();
-
-			foreach (var channel in _client.JoinedChannels)
-			{
-				var msg = SendMessage(channel.Channel, message);
-				chatMessages.Add(msg);
-
-			}
-
-			return chatMessages;
-		}
-
 		public ChatMessage SendMessage(string channel, string message)
 		{
 			_client.SendMessage(channel, message);

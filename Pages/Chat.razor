@@ -20,7 +20,6 @@
 		<button @onclick="@(() => ShowLeaveDialog())" class="btn btn-primary">Leave Channel</button>
 		<button @onclick="@(() => ShowMacroManagementDialog())" class="btn btn-primary">EditMacros</button>
 		<button @onclick="DownloadFile" class="btn btn-primary">Export Macros</button>
-		@*<input type=file @onchange="ImportFile" />*@
 	</div>
 	<div id="chatForm">
 		<label for="sel_send">Channel to send message.</label>
@@ -34,7 +33,7 @@
 		</select>
 		<label for="txt_send">Message to send.</label>
 		<input type="text" class="form-control" id="txt_send" name="txt_send" @bind="Message" placeholder="Message" @onkeydown="@CheckForSend" />
-		<input type="button" class="btn btn-primary" value="Send" id="btn_send" name="btn_send" @onclick="@SendMessage" />
+		<input type="button" class="btn btn-primary" value="Send" id="btn_send" name="btn_send" @onclick="@ValidateMessageForSend" />
 	</div>
 </main>
 
@@ -77,37 +76,54 @@
 
 	}
 
-	async Task SendMessage()
+	async Task SendMessage(string channel, string message)
 	{
-		if (SelectedValue.ToLowerInvariant() == "all")
-		{
-			var returnMessages = ChatService.SendMessage(CheckMacros(Message));
-			foreach (var item in returnMessages)
-			{
-				var msg = await FormatMessage(item);
-				Messages.Add(msg);
-			}
-		}
-		else
-		{
-			var returnMessage = ChatService.SendMessage(SelectedValue, CheckMacros(Message));
-			var msg = await FormatMessage(returnMessage);
-			Messages.Add(msg);
-		}
+		var returnMessage = ChatService.SendMessage(channel, message);
+		var msg = await FormatMessage(returnMessage);
 
 		Message = "";
 	}
 
-	string CheckMacros(string message)
+	async Task ValidateMessageForSend()
 	{
-		foreach (var macro in Macros)
+		var channels = ChannelsToSend();
+
+		var channelMacrosTorun = new List<Macro>();
+
+		foreach (var channel in channels)
 		{
-			if (macro.CanRun(message))
+			channelMacrosTorun.AddRange(Macros.Where(m => m.MatchChannel(channel)));
+			var messageMacrosTorun = channelMacrosTorun.Where(m => m.CanRun(Message));
+
+			if (messageMacrosTorun.Count() > 0)
 			{
-				return macro.Response;
+				foreach (var macro in messageMacrosTorun)
+				{
+					if(macro.Channel == channel)
+					await SendMessage(channel, macro.Response);
+				}
+			}
+			else
+			{
+				await SendMessage(channel, Message);
 			}
 		}
-		return message;
+
+	}
+
+	List<string> ChannelsToSend()
+	{
+		List<string> channels = new List<string>();
+		if (SelectedValue.ToLower() == "all")
+		{
+			channels = Channels.ToList();
+		}
+		else
+		{
+			channels.Add(SelectedValue);
+		}
+
+		return channels;
 	}
 
 	Task FillSelect()
@@ -138,7 +154,7 @@
 	{
 		if (e.Key == "Enter" && !e.ShiftKey)
 		{
-			await SendMessage();
+			await ValidateMessageForSend();
 		}
 	}
 
@@ -181,6 +197,7 @@
 	{
 		var parameters = new ModalParameters();
 		parameters.Add(nameof(Macros), Macros);
+		parameters.Add(nameof(Channels), Channels);
 
 		var modalResponse = Modal.Show<MacroManagementDialog>("Macro Management", parameters);
 		var result = await modalResponse.Result;
@@ -200,10 +217,5 @@
 			"macros.json",
 			JsonSerializer.Serialize(Macros)
 		);
-	}
-
-	void ImportFile()
-	{
-
 	}
 }
