@@ -4,7 +4,6 @@
 		<thead>
 			<tr>
 				<th>Enabled</th>
-				<th>Name</th>
 				<th>Command</th>
 				<th>Response</th>
 				<th>Controls</th>
@@ -25,12 +24,11 @@
 							<input type="checkbox" />
 						}
 					</td>
-					<td>@macro.Name</td>
 					<td>@macro.Command</td>
 					<td>@macro.Response</td>
 					<td>
-						<button @onclick="(()=>Edit(macro.Name))" class="btn btn-primary">Edit</button>
-						<button @onclick="(() => Delete(macro.Name))" class="btn btn-primary">Delete</button>
+						<button @onclick="(()=>Edit(macro.Command))" class="btn btn-primary">Edit</button>
+						<button @onclick="(() => Delete(macro.Command))" class="btn btn-primary">Delete</button>
 					</td>
 				</tr>
 			}
@@ -62,7 +60,7 @@
 
 	async Task Edit(string name)
 	{
-		var itemToRemove = Macros.FirstOrDefault(x => x.Name == name);
+		var itemToRemove = Macros.FirstOrDefault(x => x.Command == name);
 		var parameters = new ModalParameters();
 		parameters.Add("Macro", itemToRemove);
 
@@ -86,7 +84,7 @@
 
 		if (!result.Cancelled)
 		{
-			var itemToRemove = Macros.FirstOrDefault(x => x.Name == name);
+			var itemToRemove = Macros.FirstOrDefault(x => x.Command == name);
 			Macros.Remove(itemToRemove);
 			await base.InvokeAsync(StateHasChanged);
 		}
