@@ -1,5 +1,5 @@
-﻿<div>
-	<button @onclick="Create" class="btn btn-primary">Create</button>
+﻿<div class="macroMGMT">
+	<button @onclick="Create" class="btn btn-primary createBtn">Create</button>
 	<table>
 		<thead>
 			<tr>
@@ -7,7 +7,7 @@
 				<th>Name</th>
 				<th>Command</th>
 				<th>Response</th>
-				<th></th>
+				<th>Controls</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -36,7 +36,10 @@
 			}
 		</tbody>
 	</table>
-	<button @onclick="(()=>BlazoredModal.Close(ModalResult.Ok(Macros)))" class="btn btn-primary">Close</button>
+	<div class="closeBtn">
+		<button @onclick="(()=>BlazoredModal.Close(ModalResult.Ok(Macros)))" class="btn btn-primary">Close</button>
+	</div>
+	
 </div>
 
 @code {
@@ -77,7 +80,7 @@
 
 	async Task Delete(string name)
 	{
-		var modalResponse = Modal.Show<ConfirmDialog>();
+		var modalResponse = Modal.Show<ConfirmDialog>("Confirm Delete");
 		var result = await modalResponse.Result;
 
 
