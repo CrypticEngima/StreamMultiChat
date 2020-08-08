@@ -2,6 +2,7 @@
 
 @inject NavigationManager NavManager
 @inject TwitchService ChatService
+@inject IJSRuntime JSRuntime
 
 <main>
 	<h1>Chat</h1>
@@ -18,10 +19,12 @@
 		<button @onclick="@(() => ShowJoinDialog())" class="btn btn-primary">Join Channel</button>
 		<button @onclick="@(() => ShowLeaveDialog())" class="btn btn-primary">Leave Channel</button>
 		<button @onclick="@(() => ShowMacroManagementDialog())" class="btn btn-primary">EditMacros</button>
+		<button @onclick="DownloadFile" class="btn btn-primary">Export Macros</button>
+		@*<input type=file @onchange="ImportFile" />*@
 	</div>
 	<div id="chatForm">
 		<label for="sel_send">Channel to send message.</label>
-		<select id="sel_send" class="form-control d-flex" name="sel_send" @bind="SelectedValue" >
+		<select id="sel_send" class="form-control d-flex" name="sel_send" @bind="SelectedValue">
 			<option value="" disabled selected hidden>Please choose channel...</option>
 			<option value="all">All</option>
 			@foreach (var channel in Channels)
@@ -70,7 +73,7 @@
 
 	Task<string> FormatMessage(ChatMessage inMessage)
 	{
-		return Task.FromResult( $"{DateTime.Now:t}   [{inMessage.Channel}] ({inMessage.Username}) : {inMessage.Message}");
+		return Task.FromResult($"{DateTime.Now:t}   [{inMessage.Channel}] ({inMessage.Username}) : {inMessage.Message}");
 
 	}
 
@@ -79,7 +82,7 @@
 		if (SelectedValue.ToLowerInvariant() == "all")
 		{
 			var returnMessages = ChatService.SendMessage(CheckMacros(Message));
-			foreach(var item in returnMessages)
+			foreach (var item in returnMessages)
 			{
 				var msg = await FormatMessage(item);
 				Messages.Add(msg);
@@ -179,7 +182,7 @@
 		var parameters = new ModalParameters();
 		parameters.Add(nameof(Macros), Macros);
 
-		var modalResponse = Modal.Show<MacroManagementDialog>("Macro Management",parameters);
+		var modalResponse = Modal.Show<MacroManagementDialog>("Macro Management", parameters);
 		var result = await modalResponse.Result;
 
 
@@ -188,5 +191,19 @@
 			Macros = (List<Macro>)result.Data;
 		}
 		await base.InvokeAsync(StateHasChanged);
+	}
+
+	async void DownloadFile()
+	{
+		await JSRuntime.InvokeAsync<object>(
+			"FileSaveAs",
+			"macros.json",
+			JsonSerializer.Serialize(Macros)
+		);
+	}
+
+	void ImportFile()
+	{
+
 	}
 }
