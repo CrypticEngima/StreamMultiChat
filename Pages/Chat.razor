@@ -80,18 +80,20 @@
 	{
 		var returnMessage = ChatService.SendMessage(channel, message);
 		var msg = await FormatMessage(returnMessage);
+		Messages.Add(msg);
 
-		Message = "";
+
 	}
 
 	async Task ValidateMessageForSend()
 	{
+		
 		var channels = ChannelsToSend();
-
-		var channelMacrosTorun = new List<Macro>();
 
 		foreach (var channel in channels)
 		{
+			var channelMacrosTorun = new List<Macro>();
+
 			channelMacrosTorun.AddRange(Macros.Where(m => m.MatchChannel(channel)));
 			var messageMacrosTorun = channelMacrosTorun.Where(m => m.CanRun(Message));
 
@@ -109,6 +111,7 @@
 			}
 		}
 
+		Message = "";
 	}
 
 	List<string> ChannelsToSend()
