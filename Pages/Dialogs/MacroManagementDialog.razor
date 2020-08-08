@@ -6,6 +6,7 @@
 				<th>Enabled</th>
 				<th>Command</th>
 				<th>Response</th>
+				<th>Channel</th>
 				<th>Controls</th>
 			</tr>
 		</thead>
@@ -26,6 +27,7 @@
 					</td>
 					<td>@macro.Command</td>
 					<td>@macro.Response</td>
+					<td>@macro.Channel</td>
 					<td>
 						<button @onclick="(()=>Edit(macro.Command))" class="btn btn-primary">Edit</button>
 						<button @onclick="(() => Delete(macro.Command))" class="btn btn-primary">Delete</button>
@@ -44,10 +46,14 @@
 	[CascadingParameter] public IModalService Modal { get; set; }
 	[CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
 	[Parameter] public  List<Macro> Macros { get; set; }
+	[Parameter] public List<string> Channels { get; set; }
 
 	async Task Create()
 	{
-		var modalResponse = Modal.Show<EditMacroDialog>("Create Macro");
+		var parameters = new ModalParameters();
+		parameters.Add(nameof(Channels), Channels);
+
+		var modalResponse = Modal.Show<EditMacroDialog>("Create Macro", parameters);
 		var result = await modalResponse.Result;
 
 
@@ -63,6 +69,7 @@
 		var itemToRemove = Macros.FirstOrDefault(x => x.Command == name);
 		var parameters = new ModalParameters();
 		parameters.Add("Macro", itemToRemove);
+		parameters.Add(nameof(Channels), Channels);
 
 		var modalResponse = Modal.Show<EditMacroDialog>("Edit Macro",parameters);
 		var result = await modalResponse.Result;

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using StreamMultiChat.Blazor.Events;
+using StreamMultiChat.Blazor.Modals;
 using StreamMultiChat.Blazor.Settings;
 using System;
 using System.Collections.Generic;
@@ -91,8 +92,9 @@ namespace StreamMultiChat.Blazor.Services
 
 			foreach (var channel in _client.JoinedChannels)
 			{
-				SendMessage(channel.Channel, message);
-				chatMessages.Add(new ChatMessage(message, false, false, false, false, false, 0, null, channel.Channel, 0, false, null, _settings.Username));
+				var msg = SendMessage(channel.Channel, message);
+				chatMessages.Add(msg);
+
 			}
 
 			return chatMessages;
@@ -104,7 +106,6 @@ namespace StreamMultiChat.Blazor.Services
 			_logger.LogInformation($"Sending to {channel} the Message : {message}");
 			return new ChatMessage(message, false, false, false, false, false, 0, null, channel, 0, false, null, _settings.Username);
 		}
-
 
 		private ConnectionCredentials CreateCredentials()
 		{
