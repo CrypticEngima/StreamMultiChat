@@ -54,6 +54,14 @@ namespace StreamMultiChat.Blazor.Services
 			_client.Disconnect();
 		}
 
+		public async Task JoinChannel(List<string> channelStrings)
+		{
+			foreach (var channelString in channelStrings)
+			{
+				await JoinChannel(channelString);
+			}
+		}
+
 		public async Task JoinChannel(string channel)
 		{
 			if (_correctlyConnected)
@@ -80,12 +88,7 @@ namespace StreamMultiChat.Blazor.Services
 			return Task.CompletedTask;
 		}
 
-		private void MessageReceived(ChatMessageReceivedEventArgs e)
-		{
-			var handler = OnMessageReceived;
-			handler.Invoke(this, e);
-		}
-
+		
 		public ChatMessage SendMessage(string channel, string message)
 		{
 			_client.SendMessage(channel, message);
@@ -130,6 +133,13 @@ namespace StreamMultiChat.Blazor.Services
 			_correctlyConnected = true;
 		}
 
+
+		private void MessageReceived(ChatMessageReceivedEventArgs e)
+		{
+			var handler = OnMessageReceived;
+			handler.Invoke(this, e);
+		}
+
 		private void MessageReceived(object sender, OnMessageReceivedArgs args)
 		{
 
@@ -153,5 +163,7 @@ namespace StreamMultiChat.Blazor.Services
 
 			MessageReceived(eventArgs);
 		}
+
+		
 	}
 }

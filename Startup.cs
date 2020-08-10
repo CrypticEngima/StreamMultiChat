@@ -32,6 +32,7 @@ namespace StreamMultiChat.Blazor
 			//services.Configure<TwitchSettings>(section);
 			services.AddSingleton(ts);
 			services.AddSingleton<TwitchService>();
+			services.AddSingleton<DisplayService>();
 			services.AddRazorPages();
 			services.AddServerSideBlazor();
 			services.AddSignalR();

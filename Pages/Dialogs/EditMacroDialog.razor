@@ -1,12 +1,11 @@
 ﻿<div class="editMacro">
-	<EditForm Model="@Macro">
 		<table>
 			<tr>
 				<td>
 					<label for="enabled">Is Enabled</label>
 				</td>
 				<td>
-					<InputCheckbox type=checkbox name="enabled" class="form-control"  @bind-Value="IsEnabled" />
+					<input type=checkbox name="enabled" class="form-control" @bind="IsEnabled" />
 				</td>
 			</tr>
 			<tr>
@@ -14,7 +13,7 @@
 					<label for="command">Command</label>
 				</td>
 				<td>
-					<InputText name="command" placeholder="Text we check" class="form-control"  @bind-Value="Command" />
+					<input type=text name="command" placeholder="Text we check" class="form-control" @bind="Command" />
 				</td>
 			</tr>
 			<tr>
@@ -22,25 +21,23 @@
 					<label for="response">Response</label>
 				</td>
 				<td>
-					<InputText name="response" placeholder="Text we send" class="form-control"  @bind-Value="Response" />
+					<input type=text name="response" placeholder="Text we send" class="form-control" @bind="Response" />
 				</td>
 			</tr>
 			<tr>
 				<td>
-					<label for="Channel">Response</label>
+					<label for="Channel">Channel</label>
 				</td>
 				<td>
-					<InputSelect name="channel" placeholder="Text we send" class="form-control"  @bind-Value="Channel">
-						<option value="">Any</option>
-						@foreach (var channel in Channels)
+					<select id="channel" name="channel" class="form-control"  @bind="Channel">
+						@foreach (var channel in DisplayService.Channels)
 						{
-							<option value="@channel">@channel</option>
+							<option value="@channel.Id">@channel.Id</option>
 						}
-					</InputSelect>
+					</select>
 				</td>
 			</tr>
 		</table>
-	</EditForm>
 
 
 	<button @onclick="(Submit)" class="btn btn-primary">Submit</button>
@@ -50,7 +47,7 @@
 @code {
 	[CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
 	[Parameter] public Macro Macro { get; set; }
-	[Parameter] public List<string> Channels { get; set; }
+	[Parameter] public DisplayService DisplayService { get; set; }
 	bool IsEnabled;
 	string Command;
 	string Response;
@@ -58,7 +55,7 @@
 
 	protected override Task OnInitializedAsync()
 	{
-		if(Macro == null)
+		if (Macro == null)
 		{
 			Macro = new Macro();
 		}
@@ -66,21 +63,24 @@
 		IsEnabled = Macro.IsEnabled;
 		Command = Macro.Command;
 		Response = Macro.Response;
-		Channel = Macro.Channel;
+		Channel = Macro.Channel?.Id;
 
 		return Task.CompletedTask;
 	}
 
-	void Submit()
+	async Task Submit()
 	{
+
+		if (Channel is null) Channel = "All";
+
 		var macroToReturn = new Macro
 		{
 			IsEnabled = IsEnabled,
 			Command = Command,
 			Response = Response,
-			Channel = Channel
+			Channel = await DisplayService.GetChannel(Channel)
 		};
 
-		BlazoredModal.Close(ModalResult.Ok(macroToReturn));
+		await BlazoredModal.Close(ModalResult.Ok(macroToReturn));
 	}
 }

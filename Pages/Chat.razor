@@ -1,7 +1,7 @@
 ﻿@page "/chat"
 
 @inject NavigationManager NavManager
-@inject TwitchService ChatService
+@inject DisplayService DisplayService
 @inject IJSRuntime JSRuntime
 
 <main>
@@ -25,15 +25,14 @@
 		<label for="sel_send">Channel to send message.</label>
 		<select id="sel_send" class="form-control d-flex" name="sel_send" @bind="SelectedValue">
 			<option value="" disabled selected hidden>Please choose channel...</option>
-			<option value="all">All</option>
-			@foreach (var channel in Channels)
+			@foreach (var channel in DisplayService.Channels)
 			{
-				<option value=@channel>@channel</option>
+				<option value=@channel.Id>@channel.Id</option>
 			}
 		</select>
 		<label for="txt_send">Message to send.</label>
 		<input type="text" class="form-control" id="txt_send" name="txt_send" @bind="Message" placeholder="Message" @onkeydown="@CheckForSend" />
-		<input type="button" class="btn btn-primary" value="Send" id="btn_send" name="btn_send" @onclick="@ValidateMessageForSend" />
+		<input type="button" class="btn btn-primary" value="Send" id="btn_send" name="btn_send" @onclick="@SendMessage" />
 	</div>
 </main>
 
@@ -41,121 +40,54 @@
 	[CascadingParameter] public IModalService Modal { get; set; }
 
 	string Message = "";
-	string SelectedValue = "";
-	IList<string> Channels = new List<string> { };
-
-	IList<string> Messages = new List<string>();
-	List<Macro> Macros = new List<Macro>();
+	string SelectedValue;
+	List<string> Messages = new List<string>();
 
 	protected override async Task OnInitializedAsync()
 	{
 		base.OnInitialized();
 
-		ChatService.OnMessageReceived += ReceiveMessageHandler;
-		ChatService.Connect();
+		DisplayService.OnMessageReceived += RecieveMessage;
 
-		await FillSelect();
-		await JoinChannels();
+		await AddChannels();
+		await DisplayService.JoinChannels();
+		SelectedValue = DisplayService.AllChannel.Id;
 	}
 
-	async void ReceiveMessageHandler(object sender, ChatMessageReceivedEventArgs e)
-	{
-		var msg = await FormatMessage(e.ChatMessage);
-		await ReceiveMessage(msg);
-	}
-
-	async Task ReceiveMessage(string message)
-	{
-		Messages.Add(message);
-		await base.InvokeAsync(StateHasChanged);
-	}
-
-	Task<string> FormatMessage(ChatMessage inMessage)
-	{
-		return Task.FromResult($"{DateTime.Now:t}   [{inMessage.Channel}] ({inMessage.Username}) : {inMessage.Message}");
-
-	}
-
-	async Task SendMessage(string channel, string message)
-	{
-		var returnMessage = ChatService.SendMessage(channel, message);
-		var msg = await FormatMessage(returnMessage);
-
-		Message = "";
-	}
-
-	async Task ValidateMessageForSend()
-	{
-		var channels = ChannelsToSend();
-
-		var channelMacrosTorun = new List<Macro>();
-
-		foreach (var channel in channels)
-		{
-			channelMacrosTorun.AddRange(Macros.Where(m => m.MatchChannel(channel)));
-			var messageMacrosTorun = channelMacrosTorun.Where(m => m.CanRun(Message));
-
-			if (messageMacrosTorun.Count() > 0)
-			{
-				foreach (var macro in messageMacrosTorun)
-				{
-					if(macro.Channel == channel)
-					await SendMessage(channel, macro.Response);
-				}
-			}
-			else
-			{
-				await SendMessage(channel, Message);
-			}
-		}
-
-	}
-
-	List<string> ChannelsToSend()
-	{
-		List<string> channels = new List<string>();
-		if (SelectedValue.ToLower() == "all")
-		{
-			channels = Channels.ToList();
-		}
-		else
-		{
-			channels.Add(SelectedValue);
-		}
-
-		return channels;
-	}
-
-	Task FillSelect()
+	async Task AddChannels()
 	{
 		var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
 		if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("channels", out var _channels))
 		{
-			var chans = _channels.ToString().Split(',');
-			foreach (var item in chans)
+			var channels = _channels.ToString().Split(',');
+			foreach (var channel in channels)
 			{
-				Channels.Add(item);
+				await DisplayService.AddChannel(channel);
 			}
 		}
 		StateHasChanged();
-		return Task.CompletedTask;
-
 	}
 
-	async Task JoinChannels()
+	void RecieveMessage(object sender, string message)
 	{
-		foreach (var channel in Channels)
-		{
-			await ChatService.JoinChannel(channel);
-		}
+		Messages.Add(message);
 	}
 
 	async Task CheckForSend(KeyboardEventArgs e)
 	{
 		if (e.Key == "Enter" && !e.ShiftKey)
 		{
-			await ValidateMessageForSend();
+			await SendMessage();
 		}
+	}
+
+	async Task SendMessage()
+	{
+		var channel = await DisplayService.GetChannel(SelectedValue);
+		var msg = await DisplayService.SendMessage(channel,Message);
+		Messages.AddRange(msg);
+		Message = "";
+		await base.InvokeAsync(StateHasChanged);
 	}
 
 	async void ShowJoinDialog()
@@ -169,8 +101,7 @@
 			var chans = result.Data.ToString().Split(',');
 			foreach (var item in chans)
 			{
-				await ChatService.JoinChannel(item);
-				Channels.Add(item);
+				await DisplayService.AddChannel(item);
 			}
 			await base.InvokeAsync(StateHasChanged);
 		}
@@ -179,7 +110,7 @@
 	async void ShowLeaveDialog()
 	{
 		var parameters = new ModalParameters();
-		parameters.Add(nameof(Channels), Channels);
+		parameters.Add(nameof(DisplayService), DisplayService);
 
 		var modalResponse = Modal.Show<LeaveChannelDialog>("Leave Channel", parameters);
 		var result = await modalResponse.Result;
@@ -187,17 +118,16 @@
 
 		if (!result.Cancelled)
 		{
-			await ChatService.LeaveChannel(result.Data.ToString());
-			Channels.Remove(result.Data.ToString());
+			await DisplayService.RemoveChannel((Channel)result.Data);
+			await base.InvokeAsync(StateHasChanged);
 		}
-		await base.InvokeAsync(StateHasChanged);
+
 	}
 
 	async void ShowMacroManagementDialog()
 	{
 		var parameters = new ModalParameters();
-		parameters.Add(nameof(Macros), Macros);
-		parameters.Add(nameof(Channels), Channels);
+		parameters.Add(nameof(DisplayService), DisplayService);
 
 		var modalResponse = Modal.Show<MacroManagementDialog>("Macro Management", parameters);
 		var result = await modalResponse.Result;
@@ -205,9 +135,9 @@
 
 		if (!result.Cancelled)
 		{
-			Macros = (List<Macro>)result.Data;
+			await base.InvokeAsync(StateHasChanged);
 		}
-		await base.InvokeAsync(StateHasChanged);
+
 	}
 
 	async void DownloadFile()
@@ -215,7 +145,7 @@
 		await JSRuntime.InvokeAsync<object>(
 			"FileSaveAs",
 			"macros.json",
-			JsonSerializer.Serialize(Macros)
+			JsonSerializer.Serialize(await DisplayService.GetAllMacros())
 		);
 	}
 }

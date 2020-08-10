@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
@@ -10,17 +11,7 @@ namespace StreamMultiChat.Blazor.Modals
 	{
 		public string Command { get; set; }
 		public string Response { get; set; }
-		public bool IsEnabled { get; set; } = false; 
-		public string Channel { get; set; }
-
-		public bool CanRun(string command)
-		{
-			return IsEnabled && Command == command;
-		} 
-
-		public bool MatchChannel(string channel)
-		{
-			return Channel == channel || string.IsNullOrEmpty(Channel);
-		}
+		public bool IsEnabled { get; set; } 
+		public Channel Channel { get; set; }
 	}
 }
