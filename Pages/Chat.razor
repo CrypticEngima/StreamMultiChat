@@ -1,223 +1,151 @@
 ﻿@page "/chat"
 
 @inject NavigationManager NavManager
-@inject TwitchService ChatService
+@inject DisplayService DisplayService
 @inject IJSRuntime JSRuntime
 
 <main>
-    <h1>Chat</h1>
+	<h1>Chat</h1>
 
-    <div class="response_output">
-        <ul id="messagesList">
-            @foreach (var message in Messages)
-            {
-                <li>@message</li>
-            }
-        </ul>
-    </div>
-    <div id="controlButtons">
-        <button @onclick="@(() => ShowJoinDialog())" class="btn btn-primary">Join Channel</button>
-        <button @onclick="@(() => ShowLeaveDialog())" class="btn btn-primary">Leave Channel</button>
-        <button @onclick="@(() => ShowMacroManagementDialog())" class="btn btn-primary">EditMacros</button>
-        <button @onclick="DownloadFile" class="btn btn-primary">Export Macros</button>
-    </div>
-    <div id="chatForm">
-        <label for="sel_send">Channel to send message.</label>
-        <select id="sel_send" class="form-control d-flex" name="sel_send" @bind="SelectedValue">
-            <option value="" disabled selected hidden>Please choose channel...</option>
-            <option value="all">All</option>
-            @foreach (var channel in Channels)
-            {
-                <option value=@channel>@channel</option>
-            }
-        </select>
-        <label for="txt_send">Message to send.</label>
-        <input type="text" class="form-control" id="txt_send" name="txt_send" @bind="Message" placeholder="Message" @onkeydown="@CheckForSend" />
-        <input type="button" class="btn btn-primary" value="Send" id="btn_send" name="btn_send" @onclick="@ValidateMessageForSend" />
-    </div>
+	<div class="response_output">
+		<ul id="messagesList">
+			@foreach (var message in Messages)
+			{
+				<li>@message</li>
+			}
+		</ul>
+	</div>
+	<div id="controlButtons">
+		<button @onclick="@(() => ShowJoinDialog())" class="btn btn-primary">Join Channel</button>
+		<button @onclick="@(() => ShowLeaveDialog())" class="btn btn-primary">Leave Channel</button>
+		<button @onclick="@(() => ShowMacroManagementDialog())" class="btn btn-primary">EditMacros</button>
+		<button @onclick="DownloadFile" class="btn btn-primary">Export Macros</button>
+	</div>
+	<div id="chatForm">
+		<label for="sel_send">Channel to send message.</label>
+		<select id="sel_send" class="form-control d-flex" name="sel_send" @bind="SelectedValue">
+			<option value="" disabled selected hidden>Please choose channel...</option>
+			@foreach (var channel in DisplayService.Channels)
+			{
+				<option value=@channel.Id>@channel.Id</option>
+			}
+		</select>
+		<label for="txt_send">Message to send.</label>
+		<input type="text" class="form-control" id="txt_send" name="txt_send" @bind="Message" placeholder="Message" @onkeydown="@CheckForSend" />
+		<input type="button" class="btn btn-primary" value="Send" id="btn_send" name="btn_send" @onclick="@SendMessage" />
+	</div>
 </main>
 
 @code {
-    [CascadingParameter] public IModalService Modal { get; set; }
+	[CascadingParameter] public IModalService Modal { get; set; }
 
-    string Message = "";
-    string SelectedValue = "";
-    IList<string> Channels = new List<string> { };
+	string Message = "";
+	string SelectedValue;
+	List<string> Messages = new List<string>();
 
-    IList<string> Messages = new List<string>();
-    List<Macro> Macros = new List<Macro>();
+	protected override async Task OnInitializedAsync()
+	{
+		base.OnInitialized();
 
-    protected override async Task OnInitializedAsync()
-    {
-        base.OnInitialized();
+		DisplayService.OnMessageReceived += RecieveMessage;
 
-        ChatService.OnMessageReceived += ReceiveMessageHandler;
-        ChatService.Connect();
+		await AddChannels();
+		await DisplayService.JoinChannels();
+		SelectedValue = DisplayService.AllChannel.Id;
+	}
 
-        await FillSelect();
-        await JoinChannels();
-    }
+	async Task AddChannels()
+	{
+		var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+		if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("channels", out var _channels))
+		{
+			var channels = _channels.ToString().Split(',');
+			foreach (var channel in channels)
+			{
+				await DisplayService.AddChannel(channel);
+			}
+		}
+		StateHasChanged();
+	}
 
-    async void ReceiveMessageHandler(object sender, ChatMessageReceivedEventArgs e)
-    {
-        var msg = await FormatMessage(e.ChatMessage);
-        await ReceiveMessage(msg);
-    }
+	void RecieveMessage(object sender, string message)
+	{
+		Messages.Add(message);
+	}
 
-    async Task ReceiveMessage(string message)
-    {
-        Messages.Add(message);
-        await base.InvokeAsync(StateHasChanged);
-    }
+	async Task CheckForSend(KeyboardEventArgs e)
+	{
+		if (e.Key == "Enter" && !e.ShiftKey)
+		{
+			await SendMessage();
+		}
+	}
 
-    Task<string> FormatMessage(ChatMessage inMessage)
-    {
-        return Task.FromResult($"{DateTime.Now:t}   [{inMessage.Channel}] ({inMessage.Username}) : {inMessage.Message}");
+	async Task SendMessage()
+	{
+		var channel = await DisplayService.GetChannel(SelectedValue);
+		var msg = await DisplayService.SendMessage(channel,Message);
+		Messages.AddRange(msg);
+		Message = "";
+		await base.InvokeAsync(StateHasChanged);
+	}
 
-    }
-
-    async Task SendMessage(string channel, string message)
-    {
-        var returnMessage = ChatService.SendMessage(channel, message);
-        var msg = await FormatMessage(returnMessage);
-        Messages.Add(msg);
-
-
-    }
-
-    async Task ValidateMessageForSend()
-    {
-        var channels = ChannelsToSend();
-
-        foreach (var channel in channels)
-        {
-            var channelMacrosTorun = new List<Macro>();
-
-            channelMacrosTorun.AddRange(Macros.Where(m => m.MatchChannel(channel)));
-            var messageMacrosTorun = channelMacrosTorun.Where(m => m.CanRun(Message)).ToList();
-
-            if (messageMacrosTorun.Count() > 0)
-            {
-                foreach (var macro in messageMacrosTorun)
-                {
-                    if (macro.Channel == channel || macro.Channel is null)
-                        await SendMessage(channel, macro.Response);
-                }
-            }
-            else
-            {
-                await SendMessage(channel, Message);
-            }
-        }
-
-        Message = "";
-    }
-
-    List<string> ChannelsToSend()
-    {
-        List<string> channels = new List<string>();
-        if (SelectedValue.ToLower() == "all")
-        {
-            channels = Channels.ToList();
-        }
-        else
-        {
-            channels.Add(SelectedValue);
-        }
-
-        return channels;
-    }
-
-    Task FillSelect()
-    {
-        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
-        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("channels", out var _channels))
-        {
-            var chans = _channels.ToString().Split(',');
-            foreach (var item in chans)
-            {
-                Channels.Add(item);
-            }
-        }
-        StateHasChanged();
-        return Task.CompletedTask;
-
-    }
-
-    async Task JoinChannels()
-    {
-        foreach (var channel in Channels)
-        {
-            await ChatService.JoinChannel(channel);
-        }
-    }
-
-    async Task CheckForSend(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter" && !e.ShiftKey)
-        {
-            await ValidateMessageForSend();
-        }
-    }
-
-    async void ShowJoinDialog()
-    {
-        var modalResponse = Modal.Show<JoinChannelDialog>("Join Channel");
-        var result = await modalResponse.Result;
+	async void ShowJoinDialog()
+	{
+		var modalResponse = Modal.Show<JoinChannelDialog>("Join Channel");
+		var result = await modalResponse.Result;
 
 
-        if (!result.Cancelled)
-        {
-            var chans = result.Data.ToString().Split(',');
-            foreach (var item in chans)
-            {
-                await ChatService.JoinChannel(item);
-                Channels.Add(item);
-            }
-            await base.InvokeAsync(StateHasChanged);
-        }
-    }
+		if (!result.Cancelled)
+		{
+			var chans = result.Data.ToString().Split(',');
+			foreach (var item in chans)
+			{
+				await DisplayService.AddChannel(item);
+			}
+			await base.InvokeAsync(StateHasChanged);
+		}
+	}
 
-    async void ShowLeaveDialog()
-    {
-        var parameters = new ModalParameters();
-        parameters.Add(nameof(Channels), Channels);
+	async void ShowLeaveDialog()
+	{
+		var parameters = new ModalParameters();
+		parameters.Add(nameof(DisplayService), DisplayService);
 
-        var modalResponse = Modal.Show<LeaveChannelDialog>("Leave Channel", parameters);
-        var result = await modalResponse.Result;
-
-
-        if (!result.Cancelled)
-        {
-            await ChatService.LeaveChannel(result.Data.ToString());
-            Channels.Remove(result.Data.ToString());
-        }
-        await base.InvokeAsync(StateHasChanged);
-    }
-
-    async void ShowMacroManagementDialog()
-    {
-        var parameters = new ModalParameters();
-        parameters.Add(nameof(Macros), Macros);
-        parameters.Add(nameof(Channels), Channels);
-
-        var modalResponse = Modal.Show<MacroManagementDialog>("Macro Management", parameters);
-        var result = await modalResponse.Result;
+		var modalResponse = Modal.Show<LeaveChannelDialog>("Leave Channel", parameters);
+		var result = await modalResponse.Result;
 
 
-        if (!result.Cancelled)
-        {
-            Macros = (List<Macro>)result.Data;
-        }
-        await base.InvokeAsync(StateHasChanged);
-    }
+		if (!result.Cancelled)
+		{
+			await DisplayService.RemoveChannel((Channel)result.Data);
+			await base.InvokeAsync(StateHasChanged);
+		}
 
-    async void DownloadFile()
-    {
-        await JSRuntime.InvokeAsync<object>(
-            "FileSaveAs",
-            "macros.json",
-            JsonSerializer.Serialize(Macros)
-        );
-    }
+	}
+
+	async void ShowMacroManagementDialog()
+	{
+		var parameters = new ModalParameters();
+		parameters.Add(nameof(DisplayService), DisplayService);
+
+		var modalResponse = Modal.Show<MacroManagementDialog>("Macro Management", parameters);
+		var result = await modalResponse.Result;
+
+
+		if (!result.Cancelled)
+		{
+			await base.InvokeAsync(StateHasChanged);
+		}
+
+	}
+
+	async void DownloadFile()
+	{
+		await JSRuntime.InvokeAsync<object>(
+			"FileSaveAs",
+			"macros.json",
+			JsonSerializer.Serialize(await DisplayService.GetAllMacros())
+		);
+	}
 }

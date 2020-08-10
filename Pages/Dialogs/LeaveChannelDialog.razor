@@ -1,8 +1,8 @@
 ﻿<div>
 	<select id="sel_send" class="form-control d-flex" name="sel_send" @bind="SelectedValues" >
-		@foreach (var channel in Channels)
+		@foreach (var channel in DisplayService.Channels)
 		{
-			<option value=@channel>@channel</option>
+			<option value=@channel.Id>@channel.Id</option>
 		}
 	</select>
 	<button @onclick="Sub_Channel" class="btn btn-primary">Submit</button>
@@ -11,11 +11,12 @@
 
 @code {
 	[CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
-	[Parameter] public IList<string> Channels { get; set; }
+	[Parameter] public DisplayService DisplayService { get; set; }
 	string SelectedValues;
 
-	void Sub_Channel()
+	async Task Sub_Channel()
 	{
-		BlazoredModal.Close(ModalResult.Ok(SelectedValues));
+		var channel = await DisplayService.GetChannel(SelectedValues);
+		await BlazoredModal.Close(ModalResult.Ok(channel));
 	}
 }
