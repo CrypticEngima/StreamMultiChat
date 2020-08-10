@@ -7,38 +7,33 @@ namespace StreamMultiChat.Blazor.Modals
 {
 	public class Channel
 	{
-		public string Name { get; }
-		public List<Macro> Macros { get; } = new List<Macro>();
+		public string Id { get; }
 
-		public Channel(string channelName)
+		public List<string> ChannelStrings { get; }
+
+		public Channel(string channelId)
 		{
-			Name = channelName;
+			Id = channelId;
 		}
 
-		public	IEnumerable<(string channel,string message)> GetMessageToSend(string message)
+		public void AddChannelString(string channel)
 		{
-			foreach (var macro in GetMacrosToRun(message))
-			{
-				yield return (Name, macro.Response);
-			}
+			ChannelStrings.Add(channel);
 		}
 
-		private IEnumerable<Macro> GetMacrosToRun(string message)
+		public void RemoveChannelString(string channel)
 		{
-			return Macros.Where(m => m.IsEnabled && m.Command == message);
+			ChannelStrings.Remove(channel);
 		}
 
-		public void AddMacro(Macro macro)
+		public void RemoveChannelString(Channel channel)
 		{
-			if ((macro.Channel == Name || macro.Channel == null) && (!Macros.Contains(macro)))
-			{
-				Macros.Add(macro);
-			}
+			ChannelStrings.Remove(channel.Id);
 		}
 
-		public void RemoveMacro(Macro macro)
+		public IEnumerable<Macro> GetChannelMacros(IEnumerable<Macro> macros)
 		{
-			Macros.Remove(macro);
+			return macros.Where(m => m.Channel == this);
 		}
 	}
 }

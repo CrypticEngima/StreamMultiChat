@@ -54,6 +54,14 @@ namespace StreamMultiChat.Blazor.Services
 			_client.Disconnect();
 		}
 
+		public async Task JoinChannel(List<string> channelStrings)
+		{
+			foreach (var channelString in channelStrings)
+			{
+				await JoinChannel(channelString);
+			}
+		}
+
 		public async Task JoinChannel(string channel)
 		{
 			if (_correctlyConnected)
