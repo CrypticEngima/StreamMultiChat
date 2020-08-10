@@ -116,8 +116,10 @@ ul {
 	padding: 0;
 }
 
-li{
-	width:100%;
+li {
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
 }
 
 li:nth-child(odd) {
@@ -182,4 +184,21 @@ div#chatForm{
 }
 .editMacro table, .editMacro th, .editMacro td {
 	border: 0px;
+}
+
+/*Mod Controls*/
+.modControls {
+	margin-bottom: 1rem;
+	margin-right:1rem;
+}
+.modControls .delete{
+
+}
+
+.modControls .timeout{
+
+}
+
+.modControls .ban{
+
 }

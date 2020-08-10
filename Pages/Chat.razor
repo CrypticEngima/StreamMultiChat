@@ -9,9 +9,11 @@
 
 	<div class="response_output">
 		<ul id="messagesList">
-			@foreach (var message in Messages)
+			@foreach (var displayMessage in Messages)
 			{
-				<li>@message</li>
+				<li>
+					@displayMessage.Message 
+					@if (displayMessage.ModControls) { <ModComponent DisplayMessage="displayMessage"/> }</li>
 			}
 		</ul>
 	</div>
@@ -41,7 +43,7 @@
 
 	string Message = "";
 	string SelectedValue;
-	List<string> Messages = new List<string>();
+	List<DisplayMessage> Messages = new List<DisplayMessage>();
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -65,12 +67,13 @@
 				await DisplayService.AddChannel(channel);
 			}
 		}
-		StateHasChanged();
+		await base.InvokeAsync(StateHasChanged);
 	}
 
-	void RecieveMessage(object sender, string message)
+	async void RecieveMessage(object sender, DisplayMessage message)
 	{
 		Messages.Add(message);
+		await base.InvokeAsync(StateHasChanged);
 	}
 
 	async Task CheckForSend(KeyboardEventArgs e)
