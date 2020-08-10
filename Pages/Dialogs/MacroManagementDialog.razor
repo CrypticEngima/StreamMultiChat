@@ -11,7 +11,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var macro in Macros)
+			@foreach (var macro in DisplayService.GetAllMacros().Result)
 			{
 				<tr>
 
@@ -27,17 +27,17 @@
 					</td>
 					<td>@macro.Command</td>
 					<td>@macro.Response</td>
-					<td>@macro.Channel</td>
+					<td>@macro.Channel.Id</td>
 					<td>
-						<button @onclick="(()=>Edit(macro.Command))" class="btn btn-primary">Edit</button>
-						<button @onclick="(() => Delete(macro.Command))" class="btn btn-primary">Delete</button>
+						<button @onclick="(()=>Edit(macro))" class="btn btn-primary">Edit</button>
+						<button @onclick="(() => Delete(macro))" class="btn btn-primary">Delete</button>
 					</td>
 				</tr>
 			}
 		</tbody>
 	</table>
 	<div class="closeBtn">
-		<button @onclick="(()=>BlazoredModal.Close(ModalResult.Ok(Macros)))" class="btn btn-primary">Close</button>
+		<button @onclick="(()=>BlazoredModal.Close(ModalResult.Ok(true)))" class="btn btn-primary">Close</button>
 	</div>
 	
 </div>
@@ -45,13 +45,12 @@
 @code {
 	[CascadingParameter] public IModalService Modal { get; set; }
 	[CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
-	[Parameter] public  List<Macro> Macros { get; set; }
-	[Parameter] public List<string> Channels { get; set; }
+	[Parameter] public  DisplayService DisplayService { get; set; }
 
 	async Task Create()
 	{
 		var parameters = new ModalParameters();
-		parameters.Add(nameof(Channels), Channels);
+		parameters.Add(nameof(DisplayService), DisplayService);
 
 		var modalResponse = Modal.Show<EditMacroDialog>("Create Macro", parameters);
 		var result = await modalResponse.Result;
@@ -59,17 +58,16 @@
 
 		if (!result.Cancelled)
 		{
-			Macros.Add((Macro)result.Data);
+			await DisplayService.AddMacro((Macro)result.Data);
 			await base.InvokeAsync(StateHasChanged);
 		}
 	}
 
-	async Task Edit(string name)
+	async Task Edit(Macro macro)
 	{
-		var itemToRemove = Macros.FirstOrDefault(x => x.Command == name);
 		var parameters = new ModalParameters();
-		parameters.Add("Macro", itemToRemove);
-		parameters.Add(nameof(Channels), Channels);
+		parameters.Add("Macro", macro);
+		parameters.Add(nameof(DisplayService), DisplayService);
 
 		var modalResponse = Modal.Show<EditMacroDialog>("Edit Macro",parameters);
 		var result = await modalResponse.Result;
@@ -77,13 +75,13 @@
 
 		if (!result.Cancelled)
 		{
-			Macros.Remove(itemToRemove);
-			Macros.Add((Macro)result.Data);
+			await DisplayService.RemoveMacro(macro);
+			await DisplayService.AddMacro((Macro)result.Data);
 			await base.InvokeAsync(StateHasChanged);
 		}
 	}
 
-	async Task Delete(string name)
+	async Task Delete(Macro macro)
 	{
 		var modalResponse = Modal.Show<ConfirmDialog>("Confirm Delete");
 		var result = await modalResponse.Result;
@@ -91,8 +89,7 @@
 
 		if (!result.Cancelled)
 		{
-			var itemToRemove = Macros.FirstOrDefault(x => x.Command == name);
-			Macros.Remove(itemToRemove);
+			await DisplayService.RemoveMacro(macro);
 			await base.InvokeAsync(StateHasChanged);
 		}
 	}

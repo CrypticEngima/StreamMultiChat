@@ -9,11 +9,12 @@ namespace StreamMultiChat.Blazor.Modals
 	{
 		public string Id { get; }
 
-		public List<string> ChannelStrings { get; }
+		public IList<string> ChannelStrings { get; } = new List<string>();
 
 		public Channel(string channelId)
 		{
 			Id = channelId;
+
 		}
 
 		public void AddChannelString(string channel)
@@ -31,7 +32,7 @@ namespace StreamMultiChat.Blazor.Modals
 			ChannelStrings.Remove(channel.Id);
 		}
 
-		public IEnumerable<Macro> GetChannelMacros(IEnumerable<Macro> macros)
+		public IEnumerable<Macro> GetMacros(IEnumerable<Macro> macros)
 		{
 			return macros.Where(m => m.Channel == this);
 		}

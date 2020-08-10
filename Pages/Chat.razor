@@ -40,8 +40,8 @@
 	[CascadingParameter] public IModalService Modal { get; set; }
 
 	string Message = "";
-	Channel SelectedValue;
-	IList<string> Messages = new List<string>();
+	string SelectedValue;
+	List<string> Messages = new List<string>();
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -51,7 +51,7 @@
 
 		await AddChannels();
 		await DisplayService.JoinChannels();
-		SelectedValue = DisplayService.AllChannel;
+		SelectedValue = DisplayService.AllChannel.Id;
 	}
 
 	async Task AddChannels()
@@ -73,54 +73,21 @@
 		Messages.Add(message);
 	}
 
-	async Task SendMessage()
-	{
-
-		var msg = await DisplayService.SendMessage(SelectedValue,Message);
-		Messages.Add(msg);
-	}
-
-
-
-	IEnumerable<(string Channel, string Message)> GetMessagesToSend()
-	{
-		List<(string Channel, string Message)> messages = new List<(string Channel, string Message)>();
-		if (SelectedValue.ToLower() == "all")
-		{
-
-			foreach (var channel in Channels)
-			{
-				messages.AddRange(channel.GetMessageToSend(Message));
-			}
-
-			if (messages.Count == 0)
-			{
-				foreach (var channel in Channels)
-				{
-					messages.Add((channel.Name, Message));
-				}
-			}
-
-		}
-		else
-		{
-			var channel = Channels.Where(c => c.Name == SelectedValue).FirstOrDefault();
-			messages.AddRange(channel.GetMessageToSend(Message));
-			if (messages.Count == 0)
-			{
-				messages.Add((channel.Name, Message));
-			}
-		}
-
-		return messages;
-	}
-
 	async Task CheckForSend(KeyboardEventArgs e)
 	{
 		if (e.Key == "Enter" && !e.ShiftKey)
 		{
 			await SendMessage();
 		}
+	}
+
+	async Task SendMessage()
+	{
+		var channel = await DisplayService.GetChannel(SelectedValue);
+		var msg = await DisplayService.SendMessage(channel,Message);
+		Messages.AddRange(msg);
+		Message = "";
+		await base.InvokeAsync(StateHasChanged);
 	}
 
 	async void ShowJoinDialog()
@@ -134,8 +101,7 @@
 			var chans = result.Data.ToString().Split(',');
 			foreach (var item in chans)
 			{
-				await ChatService.JoinChannel(item);
-				Channels.Add(new Channel(item));
+				await DisplayService.AddChannel(item);
 			}
 			await base.InvokeAsync(StateHasChanged);
 		}
@@ -144,7 +110,7 @@
 	async void ShowLeaveDialog()
 	{
 		var parameters = new ModalParameters();
-		parameters.Add(nameof(Channels), Channels);
+		parameters.Add(nameof(DisplayService), DisplayService);
 
 		var modalResponse = Modal.Show<LeaveChannelDialog>("Leave Channel", parameters);
 		var result = await modalResponse.Result;
@@ -152,19 +118,16 @@
 
 		if (!result.Cancelled)
 		{
-			Channel channelToLeave = Channels.Where(c => c.Name == result.Data.ToString()).FirstOrDefault();
-
-			await ChatService.LeaveChannel(channelToLeave.Name);
-			Channels.Remove(channelToLeave);
+			await DisplayService.RemoveChannel((Channel)result.Data);
+			await base.InvokeAsync(StateHasChanged);
 		}
-		await base.InvokeAsync(StateHasChanged);
+
 	}
 
 	async void ShowMacroManagementDialog()
 	{
 		var parameters = new ModalParameters();
-		parameters.Add("Macros", GetAllMacros());
-		parameters.Add(nameof(Channels), Channels);
+		parameters.Add(nameof(DisplayService), DisplayService);
 
 		var modalResponse = Modal.Show<MacroManagementDialog>("Macro Management", parameters);
 		var result = await modalResponse.Result;
@@ -172,15 +135,9 @@
 
 		if (!result.Cancelled)
 		{
-			foreach (var macro in (List<Macro>)result.Data)
-			{
-				foreach (var channel in Channels)
-				{
-					channel.AddMacro(macro);
-				}
-			}
+			await base.InvokeAsync(StateHasChanged);
 		}
-		await base.InvokeAsync(StateHasChanged);
+
 	}
 
 	async void DownloadFile()
@@ -188,21 +145,7 @@
 		await JSRuntime.InvokeAsync<object>(
 			"FileSaveAs",
 			"macros.json",
-			JsonSerializer.Serialize(GetAllMacros())
+			JsonSerializer.Serialize(await DisplayService.GetAllMacros())
 		);
 	}
-
-	IEnumerable<Macro> GetAllMacros()
-	{
-		List<Macro> macros = new List<Macro>();
-
-		foreach (var channel in Channels)
-		{
-			macros.AddUnique(channel.Macros);
-		}
-
-		return macros;
-	}
-
-
 }
