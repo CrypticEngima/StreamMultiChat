@@ -139,6 +139,7 @@ namespace StreamMultiChat.Blazor.Services
 				{
 					foreach (var macro in macros)
 					{
+						if (macro.Channel.Id != channelString) continue;
 						yield return (channelString, macro.Response);
 					}
 				}
