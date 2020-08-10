@@ -34,6 +34,8 @@ namespace StreamMultiChat.Blazor.Modals
 
 		public IEnumerable<Macro> GetMacros(IEnumerable<Macro> macros)
 		{
+			if (Id == "All") return macros;
+
 			return macros.Where(m => m.Channel == this);
 		}
 	}
