@@ -18,7 +18,6 @@
 
 app {
 	width: 100%;
-	
 }
 
 body {
@@ -43,10 +42,10 @@ div.top-row {
 	border-color: #1861ac;
 }
 
-input[type=text],select,select:checked,option {
-	font-size:16px;
+input[type=text], select, select:checked, option {
+	font-size: 16px;
 	/*Important forces override of scss style*/
-	font-size: clamp( var(--text-minFontSize), var(--text-scaler), var(--text-maxFontSize) )!important;
+	font-size: clamp( var(--text-minFontSize), var(--text-scaler), var(--text-maxFontSize) ) !important;
 }
 
 input[type=text], input, select, button {
@@ -55,23 +54,28 @@ input[type=text], input, select, button {
 }
 
 h1 {
-	text-align:center;
-	font-size:25px;
+	text-align: center;
+	font-size: 25px;
 	font-size: clamp( var(--h1-minFontSize), var(--h1-scaler), var(--h1-maxFontSize) );
 }
 
-main div{
-	margin-top:1rem;
-}
-table{
-	margin-top:1rem;
-	width:100%;
+main div {
+	margin-top: 1rem;
 }
 
-table, th, td{
+table {
+	margin-top: 1rem;
+	width: 100%;
+}
+
+table, th, td {
 	border: 1px solid var(--green);
-	border-radius:4px;
-} 
+	border-radius: 4px;
+}
+
+.hidden {
+	display: none;
+}
 
 /*Blazor default error*/
 #blazor-error-ui {
@@ -86,12 +90,12 @@ table, th, td{
 	z-index: 1000;
 }
 
-#blazor-error-ui .dismiss {
-	cursor: pointer;
-	position: absolute;
-	right: 0.75rem;
-	top: 0.5rem;
-}
+	#blazor-error-ui .dismiss {
+		cursor: pointer;
+		position: absolute;
+		right: 0.75rem;
+		top: 0.5rem;
+	}
 
 /*Index*/
 form#formChat {
@@ -102,7 +106,7 @@ input#channels {
 	width: 100%;
 }
 
-button#chatsubmit,input#btn_send {
+button#chatsubmit, input#btn_send {
 	width: 50%;
 	margin-top: 1rem;
 }
@@ -116,16 +120,18 @@ ul {
 	padding: 0;
 }
 
-li{
-	width:100%;
+li {
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
 }
 
-li:nth-child(odd) {
-	background-color:var(--alternateBlack);
-}
+	li:nth-child(odd) {
+		background-color: var(--alternateBlack);
+	}
 
-div#chatForm{
-	text-align:center;
+div#chatForm {
+	text-align: center;
 }
 
 /*Dialogs*/
@@ -138,25 +144,28 @@ div#chatForm{
 	text-align: center;
 }
 
-.blazored-modal button {
-	margin-top: 1rem;
-	width: 47%;
+	.blazored-modal button {
+		margin-top: 1rem;
+		width: 47%;
+	}
+
+	.blazored-modal .blazored-modal-header {
+		text-align: center;
+		display: block;
+	}
+
+.cancelBtn {
+	background-color: var(--red);
+	border-color: var(--red-hover);
 }
 
-.blazored-modal .blazored-modal-header {
-	text-align: center;
-	display: block;
-}
-.cancelBtn{
-	background-color:var(--red);
-	border-color:var(--red-hover);
-}
-.cancelBtn:focus{
-	background-color:var(--red-hover);
-}
+	.cancelBtn:focus {
+		background-color: var(--red-hover);
+	}
+
 	.cancelBtn:hover {
 		background-color: var(--red-hover);
-		border-color:var(--red-hover);
+		border-color: var(--red-hover);
 	}
 
 /*MacroManagementDialog*/
@@ -164,22 +173,48 @@ div#chatForm{
 	text-align: left;
 }
 
-.macroMGMT .createBtn{
-	width:25%;
-}
+	.macroMGMT .createBtn {
+		width: 25%;
+	}
 
-.macroMGMT .closeBtn {
-	text-align: center;
-}
+	.macroMGMT .closeBtn {
+		text-align: center;
+	}
 
 /*EditMacroDialog*/
-.editMacro{
-	min-width:360px;
+.editMacro {
+	min-width: 360px;
 }
 
-.editMacro input{
-	width:100%
+.editMacro input {
+	width: 100%
 }
+
 .editMacro table, .editMacro th, .editMacro td {
 	border: 0px;
+}
+
+/*Mod Controls*/
+.modControls {
+	margin-bottom: 1rem;
+	margin-right: 1rem;
+	width: 6rem;
+	height: 2rem;
+	display: flex;
+}
+
+.modControls .delete {
+	width: 2rem;
+}
+
+.modControls .timeout {
+	width: 2rem;
+}
+
+.modControls .ban {
+	width: 2rem;
+}
+
+.modControls .unban {
+	width: 2rem;
 }
