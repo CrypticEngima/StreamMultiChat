@@ -1,11 +1,13 @@
-using Blazored.Modal;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
+using Blazored.Modal;
+
 using StreamMultiChat.Blazor.Services;
-using StreamMultiChat.Blazor.Settings;
+using StreamMultiChat.Blazor.Extensions;
 
 namespace StreamMultiChat.Blazor
 {
@@ -22,15 +24,9 @@ namespace StreamMultiChat.Blazor
 		// For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
 		public void ConfigureServices(IServiceCollection services)
 		{
-			//var section = Configuration.GetSection("TwitchSettings");
-
-			var ts = new TwitchSettings();
-			ts.Username = (string)Configuration.GetValue(typeof(string), "TwitchSettings:Username");
-			ts.Token = (string)Configuration.GetValue(typeof(string), "TwitchSettings:Token");
-
+			services.AddTwitchSettings(Configuration);
 			services.AddLogging();
-			//services.Configure<TwitchSettings>(section);
-			services.AddSingleton(ts);
+
 			services.AddSingleton<TwitchService>();
 			services.AddSingleton<DisplayService>();
 			services.AddRazorPages();
