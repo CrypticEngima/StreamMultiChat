@@ -1,0 +1,21 @@
+﻿@inject AuthenticationService AuthenticationService
+@inject IOptions<TwitchSettings> SettingsProvider 
+
+<button class="btn btn-primary" @onclick="Login">Twitch Login</button>
+
+@code {
+	[CascadingParameter] public IModalService Modal { get; set; }
+	[CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+	TwitchSettings TwitchSettings;
+
+	protected override Task OnInitializedAsync()
+	{
+		TwitchSettings = SettingsProvider.Value;
+		return base.OnInitializedAsync();
+	}
+
+	void Login()
+	{
+		string url = $"https://id.twitch.tv/oauth2/authorize?response_type=code&client_id={TwitchSettings.ClientId}&redirect_uri=http://localhost:5001&scope=chat:edit+chat:read";
+	}
+}

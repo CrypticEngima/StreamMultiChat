@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StreamMultiChat.Blazor.Events;
 using StreamMultiChat.Blazor.Modals;
 using StreamMultiChat.Blazor.Settings;
@@ -28,9 +29,9 @@ namespace StreamMultiChat.Blazor.Services
 		public event EventHandler<ChatMessageReceivedEventArgs> OnMessageReceived;
 		public event EventHandler<ModReceivedEventArgs> OnModReceived;
 
-		public TwitchService(TwitchSettings settings, ILogger<TwitchService> logger)
+		public TwitchService(IOptions<TwitchSettings> settings, ILogger<TwitchService> logger)
 		{
-			_settings = settings;
+			_settings = settings.Value;
 			_logger = logger;
 
 			CreateClient();

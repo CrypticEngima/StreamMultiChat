@@ -22,15 +22,8 @@ namespace StreamMultiChat.Blazor
 		// For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
 		public void ConfigureServices(IServiceCollection services)
 		{
-			//var section = Configuration.GetSection("TwitchSettings");
-
-			var ts = new TwitchSettings();
-			ts.Username = (string)Configuration.GetValue(typeof(string), "TwitchSettings:Username");
-			ts.Token = (string)Configuration.GetValue(typeof(string), "TwitchSettings:Token");
-
 			services.AddLogging();
-			//services.Configure<TwitchSettings>(section);
-			services.AddSingleton(ts);
+			services.Configure<TwitchSettings>(Configuration.GetSection("TwitchSettings"));
 			services.AddSingleton<TwitchService>();
 			services.AddSingleton<DisplayService>();
 			services.AddRazorPages();
