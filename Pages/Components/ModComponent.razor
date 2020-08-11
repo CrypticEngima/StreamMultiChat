@@ -1,0 +1,74 @@
+﻿<span class=modControls>
+	<span class=delete>
+		<a @onclick="Delete">
+			<svg fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+				<path d="M 11.5 -0.03125 C 9.542969 -0.03125 7.96875 1.59375 7.96875 3.5625 L 7.96875 4 L 4 4 C 3.449219 4 3 4.449219 3 5 L 3 6 L 2 6 L 2 8 L 4 8 L 4 23 C 4 24.644531 5.355469 26 7 26 L 19 26 C 20.644531 26 22 24.644531 22 23 L 22 8 L 24 8 L 24 6 L 23 6 L 23 5 C 23 4.449219 22.550781 4 22 4 L 18.03125 4 L 18.03125 3.5625 C 18.03125 1.59375 16.457031 -0.03125 14.5 -0.03125 Z M 11.5 2.03125 L 14.5 2.03125 C 15.304688 2.03125 15.96875 2.6875 15.96875 3.5625 L 15.96875 4 L 10.03125 4 L 10.03125 3.5625 C 10.03125 2.6875 10.695313 2.03125 11.5 2.03125 Z M 6 8 L 11.125 8 C 11.25 8.011719 11.371094 8.03125 11.5 8.03125 L 14.5 8.03125 C 14.628906 8.03125 14.75 8.011719 14.875 8 L 20 8 L 20 23 C 20 23.5625 19.5625 24 19 24 L 7 24 C 6.4375 24 6 23.5625 6 23 Z M 8 10 L 8 22 L 10 22 L 10 10 Z M 12 10 L 12 22 L 14 22 L 14 10 Z M 16 10 L 16 22 L 18 22 L 18 10 Z" />
+			</svg>
+		</a>
+	</span>
+	<span class="timeout">
+		<a @onclick="Timeout">
+			<svg fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+				<path d="M 12 2 C 6.4889971 2 2 6.4889971 2 12 C 2 17.511003 6.4889971 22 12 22 C 17.511003 22 22 17.511003 22 12 C 22 6.4889971 17.511003 2 12 2 z M 12 4 C 16.430123 4 20 7.5698774 20 12 C 20 16.430123 16.430123 20 12 20 C 7.5698774 20 4 16.430123 4 12 C 4 7.5698774 7.5698774 4 12 4 z M 11 6 L 11 12.414062 L 15.292969 16.707031 L 16.707031 15.292969 L 13 11.585938 L 13 6 L 11 6 z" />
+			</svg>
+		</a>
+	</span>
+	<span class="ban @(UserBanned? "hidden" : "" ) ">
+		<a @onclick="Ban">
+			<svg fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+				<path d="M 12 2 C 6.4889971 2 2 6.4889971 2 12 C 2 17.511003 6.4889971 22 12 22 C 17.511003 22 22 17.511003 22 12 C 22 6.4889971 17.511003 2 12 2 z M 12 4 C 16.430123 4 20 7.5698774 20 12 C 20 13.85307 19.369262 15.55056 18.318359 16.904297 L 7.0957031 5.6816406 C 8.4494397 4.6307377 10.14693 4 12 4 z M 5.6816406 7.0957031 L 16.904297 18.318359 C 15.55056 19.369262 13.85307 20 12 20 C 7.5698774 20 4 16.430123 4 12 C 4 10.14693 4.6307377 8.4494397 5.6816406 7.0957031 z" />
+			</svg>
+		</a>
+	</span>
+	<span class="unban @(UserBanned? "" : "hidden") ">
+		<a @onclick="Unban">
+			<svg fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+				<path d="M 20.292969 5.2929688 L 9 16.585938 L 4.7070312 12.292969 L 3.2929688 13.707031 L 9 19.414062 L 21.707031 6.7070312 L 20.292969 5.2929688 z" />
+			</svg>
+		</a>
+	</span>
+</span>
+
+@code{
+	[CascadingParameter] public IModalService Modal { get; set; }
+	[Parameter] public DisplayService DisplayService { get; set; }
+	[Parameter] public DisplayMessage DisplayMessage { get; set; }
+	bool UserBanned = false;
+
+	async void Delete()
+	{
+		// There is no delete command it just does 1s timeout /timeout Username 1s
+		await DisplayService.SendMessage(DisplayMessage.Channel, $"/timeout {DisplayMessage.User} 1");
+	}
+
+	async void Timeout()
+	{
+		// /timeout USERNAME SECONDS message, modal for time in seconds
+		var modalResponse = Modal.Show<TimeoutDialog>("Time Out");
+		var result = await modalResponse.Result;
+
+
+		if (!result.Cancelled)
+		{
+			var time = int.Parse(result.Data.ToString());
+
+			await DisplayService.SendMessage(DisplayMessage.Channel,$"/timeout {DisplayMessage.User} {time}");
+		}
+	}
+
+	async void Ban()
+	{
+		// /ban USERNAME,
+		await DisplayService.SendMessage(DisplayMessage.Channel, $"/ban {DisplayMessage.User}");
+		UserBanned = true;
+		await base.InvokeAsync(StateHasChanged);
+	}
+
+	async void Unban()
+	{
+		// /unban USERNAME,
+		await DisplayService.SendMessage(DisplayMessage.Channel, $"/unban {DisplayMessage.User}");
+		UserBanned = false;
+		await base.InvokeAsync(StateHasChanged);
+	}
+}

@@ -1,6 +1,7 @@
 ﻿using StreamMultiChat.Blazor.Events;
 using StreamMultiChat.Blazor.Extensions;
 using StreamMultiChat.Blazor.Modals;
+using StreamMultiChat.Blazor.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,17 +16,22 @@ namespace StreamMultiChat.Blazor.Services
 
 		private IList<Macro> Macros = new List<Macro>();
 		private TwitchService _twitchService;
+		private TwitchSettings _twitchSettings;
 
-		public event EventHandler<string> OnMessageReceived;
+		public event EventHandler<DisplayMessage> OnMessageReceived;
 
-		public DisplayService(TwitchService twitchService)
+		public DisplayService(TwitchService twitchService,TwitchSettings settings)
 		{
 			_twitchService = twitchService;
+			_twitchSettings = settings;
 			Channels.Add(new Channel("All"));
 			AllChannel = Channels.FirstOrDefault(c => c.Id == "All");
 			_twitchService.OnMessageReceived += ReceiveMessageHandler;
+			_twitchService.OnModReceived += ReceiveModHandler;
 			_twitchService.Connect();
 		}
+
+		
 
 		public async Task<Channel> GetChannel(string channelId)
 		{
@@ -83,19 +89,24 @@ namespace StreamMultiChat.Blazor.Services
 
 		private void ReceiveMessageHandler(object sender, ChatMessageReceivedEventArgs e)
 		{
+			var channel = GetChannel(e.ChatMessage.Channel).Result;
+
 			var msg = FormatMessageForDisplay(e.ChatMessage);
-			MessageReceived(msg);
+			MessageReceived(msg, channel.IsModerator(_twitchSettings.Username),channel,e.ChatMessage.Username);
 
 		}
 
-		private void MessageReceived(string e)
+		private void MessageReceived(string e,bool modControl,Channel channel,string user)
 		{
 			var handler = OnMessageReceived;
-			handler.Invoke(this, e);
+			var displayMessage = new DisplayMessage(e,modControl,channel,user);
+			handler.Invoke(this, displayMessage);
 		}
 
-		private string FormatMessageForDisplay(ChatMessage inMessage)
+		private string  FormatMessageForDisplay(ChatMessage inMessage)
 		{
+			
+
 			return $"{DateTime.Now:t}   [{inMessage.Channel}] ({inMessage.Username}) : {inMessage.Message}";
 		}
 
@@ -105,12 +116,13 @@ namespace StreamMultiChat.Blazor.Services
 			foreach (var channel in AllChannel.ChannelStrings)
 			{
 				await _twitchService.JoinChannel(channel);
+				_twitchService.GetModerators(channel);
 			}
 		}
 
-		public async Task<IList<string>> SendMessage(Channel channel, string message)
+		public async Task<IList<DisplayMessage>> SendMessage(Channel channel, string message)
 		{
-			IList<string> returnMessages = new List<string>();
+			IList<DisplayMessage> returnMessages = new List<DisplayMessage>();
 
 			var macros = await GetMacrosForMessage(channel, message);
 			var messages = GenerateMessages(channel, message, macros);
@@ -118,7 +130,8 @@ namespace StreamMultiChat.Blazor.Services
 			foreach (var messageToSend in messages)
 			{
 				var sentMessage = _twitchService.SendMessage(messageToSend.Channel, messageToSend.message);
-				returnMessages.Add(FormatMessageForDisplay(sentMessage));
+				var displayMessage = new DisplayMessage(FormatMessageForDisplay(sentMessage), channel.IsModerator(_twitchSettings.Username), channel,_twitchSettings.Username);
+				returnMessages.Add(displayMessage);
 			}
 
 			return returnMessages;
@@ -144,6 +157,12 @@ namespace StreamMultiChat.Blazor.Services
 					}
 				}
 			}
+		}
+
+		private void ReceiveModHandler(object sender, ModReceivedEventArgs e)
+		{
+			var channel = GetChannel(e.Channel).Result;
+			channel.AddModerators(e.Mods);
 		}
 	}
 }

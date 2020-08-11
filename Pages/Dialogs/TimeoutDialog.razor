@@ -1,0 +1,11 @@
+﻿<div>
+	<label for="time">Time in seconds</label>
+	<input type="text" name="time" id="time" class="form-control" placeholder="300" @bind="Time" />
+	<button @onclick="(() => BlazoredModal.Close(ModalResult.Ok(Time)))" class="btn btn-primary">Submit</button>
+	<button @onclick="BlazoredModal.Cancel" class="btn btn-primary cancelBtn">Cancel</button>
+</div>
+
+@code {
+	[CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+	string Time;
+}

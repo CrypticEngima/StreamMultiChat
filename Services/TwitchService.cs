@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
+using TwitchLib.Client.Extensions;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
@@ -25,6 +26,7 @@ namespace StreamMultiChat.Blazor.Services
 		public bool _connected => _client.IsConnected;
 
 		public event EventHandler<ChatMessageReceivedEventArgs> OnMessageReceived;
+		public event EventHandler<ModReceivedEventArgs> OnModReceived;
 
 		public TwitchService(TwitchSettings settings, ILogger<TwitchService> logger)
 		{
@@ -124,8 +126,11 @@ namespace StreamMultiChat.Blazor.Services
 			{
 				_client.OnConnected += OnConnected;
 				_client.OnMessageReceived += MessageReceived;
+				_client.OnModeratorsReceived += ModeratorReceived;
 			}
 		}
+
+		
 
 		private void OnConnected(object sender, OnConnectedArgs args)
 		{
@@ -136,8 +141,7 @@ namespace StreamMultiChat.Blazor.Services
 
 		private void MessageReceived(ChatMessageReceivedEventArgs e)
 		{
-			var handler = OnMessageReceived;
-			handler.Invoke(this, e);
+			OnMessageReceived.Invoke(this, e);
 		}
 
 		private void MessageReceived(object sender, OnMessageReceivedArgs args)
@@ -164,6 +168,29 @@ namespace StreamMultiChat.Blazor.Services
 			MessageReceived(eventArgs);
 		}
 
-		
+		 public  void GetModerators(string channel)
+		{
+			_client.GetChannelModerators(channel);
+		}
+
+		private void ModeratorReceived(object sender, OnModeratorsReceivedArgs e)
+		{
+			var mods = new ModReceivedEventArgs(e.Channel, e.Moderators);
+			ModeratorReceived(mods);
+		}
+
+		private void ModeratorReceived(object sender, OnModeratorJoinedArgs e)
+		{
+			List<string> modsList = new List<string>();
+			modsList.Add(e.Username);
+
+			var mods = new ModReceivedEventArgs(e.Channel, modsList);
+			ModeratorReceived(mods);
+		}
+
+		private void ModeratorReceived(ModReceivedEventArgs e)
+		{
+			OnModReceived.Invoke(this, e);
+		}
 	}
 }

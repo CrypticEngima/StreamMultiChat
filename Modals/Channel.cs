@@ -1,6 +1,8 @@
-﻿using System;
+﻿using StreamMultiChat.Blazor.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 
 namespace StreamMultiChat.Blazor.Modals
@@ -10,6 +12,7 @@ namespace StreamMultiChat.Blazor.Modals
 		public string Id { get; }
 
 		public IList<string> ChannelStrings { get; } = new List<string>();
+		public List<string> Moderators { get; } = new List<string>();
 
 		public Channel(string channelId)
 		{
@@ -37,6 +40,24 @@ namespace StreamMultiChat.Blazor.Modals
 			if (Id == "All") return macros;
 
 			return macros.Where(m => m.Channel == this);
+		}
+
+		public void AddModerators(IList<string> mods)
+		{
+			Moderators.AddUnique(mods);
+		}
+
+		public bool IsModerator(string userName)
+		{
+			bool broadcaster = false;
+
+			foreach (var channelName in ChannelStrings)
+			{
+				broadcaster = channelName.ToLower() == userName.ToLower();
+			}
+
+
+			return Moderators.Contains(userName) || broadcaster;
 		}
 	}
 }
