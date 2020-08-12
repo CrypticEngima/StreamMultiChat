@@ -1,5 +1,6 @@
 ﻿using StreamMultiChat.Blazor.Modals;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace StreamMultiChat.Blazor.Services
@@ -13,6 +14,16 @@ namespace StreamMultiChat.Blazor.Services
 		public IEnumerable<Macro> GetAllMacros()
 		{
 			return Macros;
+		}
+
+		public IEnumerable<Macro> GetMacroByCommand(string command)
+		{
+			return Macros.Where(m => m.Command == command && m.IsEnabled);
+		}
+
+		public IEnumerable<Macro> GetMacrosByChannelCommand(Channel channel,string command)
+		{
+			return Macros.Where(m => m.Command == command && m.Channel == channel && m.IsEnabled);
 		}
 
 		public async Task AddMacro(Macro macro)

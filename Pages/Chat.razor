@@ -95,7 +95,7 @@
 	async Task SendMessage()
 	{
 		var channel = await ChannelService.GetChannel(SelectedValue);
-		var msg = await channel.SendMessage(Message,MacroService.GetAllMacros());
+		var msg = channel.SendMessage(Message);
 		Messages.AddRange(msg);
 		Message = "";
 		await base.InvokeAsync(StateHasChanged);

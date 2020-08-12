@@ -37,10 +37,10 @@
 
 	bool UserBanned = false;
 
-	async void Delete()
+	void Delete()
 	{
 		// There is no delete command it just does 1s timeout /timeout Username 1s
-		await DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} 1",MacroService.GetAllMacros());
+		 DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} 1");
 	}
 
 	async void Timeout()
@@ -54,7 +54,7 @@
 		{
 			if( int.TryParse(result.Data.ToString(),out var time))
 			{
-				await DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} {time}",MacroService.GetAllMacros());
+				DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} {time}");
 			}
 		}
 	}
@@ -62,7 +62,7 @@
 	async void Ban()
 	{
 		// /ban USERNAME,
-		await DisplayMessage.Channel.SendMessage($"/ban {DisplayMessage.User}", MacroService.GetAllMacros());
+		DisplayMessage.Channel.SendMessage($"/ban {DisplayMessage.User}");
 		UserBanned = true;
 		await base.InvokeAsync(StateHasChanged);
 	}
@@ -70,7 +70,7 @@
 	async void Unban()
 	{
 		// /unban USERNAME,
-		await DisplayMessage.Channel.SendMessage($"/unban {DisplayMessage.User}", MacroService.GetAllMacros());
+		DisplayMessage.Channel.SendMessage($"/unban {DisplayMessage.User}");
 		UserBanned = false;
 		await base.InvokeAsync(StateHasChanged);
 	}

@@ -19,7 +19,7 @@ namespace StreamMultiChat.Blazor.Modals
 
 		public Channel(string channelId, TwitchService twitchService, MacroService macroService, AuthenticationService authenticationService)
 		{
-			Id = channelId;
+			Id = channelId.ToLower();
 			_twitchService = twitchService;
 			_macroService = macroService;
 			_authenticationService = authenticationService;
@@ -27,24 +27,12 @@ namespace StreamMultiChat.Blazor.Modals
 
 		public void AddChannelString(string channel)
 		{
-			ChannelStrings.Add(channel);
-		}
-
-		public void RemoveChannelString(string channel)
-		{
-			ChannelStrings.Remove(channel);
+			ChannelStrings.Add(channel.ToLower());
 		}
 
 		public void RemoveChannelString(Channel channel)
 		{
 			ChannelStrings.Remove(channel.Id);
-		}
-
-		public IEnumerable<Macro> GetMacros(IEnumerable<Macro> macros)
-		{
-			if (Id == "All") return macros;
-
-			return macros.Where(m => m.Channel == this);
 		}
 
 		public void AddModerators(IList<string> mods)
@@ -64,30 +52,23 @@ namespace StreamMultiChat.Blazor.Modals
 			return Moderators.Contains(_authenticationService.TwitchUser.login) || broadcaster;
 		}
 
-		public Task<IList<DisplayMessage>> SendMessage(string message, IEnumerable<Macro> macros)
+		public IEnumerable<DisplayMessage> SendMessage(string message)
 		{
-			IList<DisplayMessage> returnMessages = new List<DisplayMessage>();
-
-			var messages = GenerateMessages(message);
-
-
-			foreach (var messageToSend in messages)
+			foreach (var messageToSend in GenerateMessages(message))
 			{
 				var sentMessage = _twitchService.SendMessage(messageToSend.channel, messageToSend.message);
 				var displayMessage = new DisplayMessage(sentMessage.ToString(), IsModerator(), this, sentMessage.Username);
-				returnMessages.Add(displayMessage);
+
+				yield return displayMessage;
 			}
-
-
-			return Task.FromResult(returnMessages);
 		}
 
 		private IEnumerable<(string channel, string message)> GenerateMessages(string message)
 		{
-			var macrosToRun = Id == "All" ? 
-				_macroService.GetAllMacros().Where(m => m.Command == message && m.IsEnabled) : 
-				_macroService.GetAllMacros().Where(m => m.Command == message && m.Channel == this && m.IsEnabled);
-
+			var macrosToRun = Id == "all" ? 
+				_macroService.GetMacroByCommand(message) : 
+				_macroService.GetMacrosByChannelCommand(this, message);
+				
 			if (macrosToRun.Count() == 0)
 			{
 				foreach (var channelString in ChannelStrings)

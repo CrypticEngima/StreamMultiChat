@@ -24,8 +24,8 @@ namespace StreamMultiChat.Blazor.Services
 			_twitchService = twitchService;
 			_macroService = macroService;
 
-			Channels.Add(new Channel("All", _twitchService, _macroService, _authenticationService));
-			AllChannel = Channels.FirstOrDefault(c => c.Id == "All");
+			Channels.Add(new Channel("all", _twitchService, _macroService, _authenticationService));
+			AllChannel = Channels.FirstOrDefault(c => c.Id == "all");
 			_twitchService.OnMessageReceived += ReceiveMessageHandler;
 			_twitchService.OnModReceived += ReceiveModHandler;
 			_twitchService.Connect();
