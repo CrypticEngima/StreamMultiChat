@@ -21,10 +21,10 @@ namespace StreamMultiChat.Blazor.Services
 
 		public event EventHandler<DisplayMessage> OnMessageReceived;
 
-		public DisplayService(TwitchService twitchService,IOptions<TwitchSettings> settings)
+		public DisplayService(TwitchService twitchService,TwitchSettings settings)
 		{
 			_twitchService = twitchService;
-			_twitchSettings = settings.Value;
+			_twitchSettings = settings;
 			Channels.Add(new Channel("All"));
 			AllChannel = Channels.FirstOrDefault(c => c.Id == "All");
 			_twitchService.OnMessageReceived += ReceiveMessageHandler;

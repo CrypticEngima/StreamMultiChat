@@ -30,9 +30,11 @@ body {
 }
 
 div.top-row {
-	height: 2rem;
 	background-color: var(--purple);
 	width: 100%;
+	text-align:right;
+	align-content:center;
+	float:left;
 }
 
 
@@ -40,7 +42,9 @@ div.top-row {
 	color: #fff;
 	background-color: #1b6ec2;
 	border-color: #1861ac;
+	align-content:center;
 }
+
 
 input[type=text], select, select:checked, option {
 	font-size: 16px;
@@ -90,12 +94,12 @@ table, th, td {
 	z-index: 1000;
 }
 
-	#blazor-error-ui .dismiss {
-		cursor: pointer;
-		position: absolute;
-		right: 0.75rem;
-		top: 0.5rem;
-	}
+#blazor-error-ui .dismiss {
+	cursor: pointer;
+	position: absolute;
+	right: 0.75rem;
+	top: 0.5rem;
+}
 
 /*Index*/
 form#formChat {
@@ -126,9 +130,9 @@ li {
 	justify-content: space-between;
 }
 
-	li:nth-child(odd) {
-		background-color: var(--alternateBlack);
-	}
+li:nth-child(odd) {
+	background-color: var(--alternateBlack);
+}
 
 div#chatForm {
 	text-align: center;
@@ -144,15 +148,15 @@ div#chatForm {
 	text-align: center;
 }
 
-	.blazored-modal button {
-		margin-top: 1rem;
-		width: 47%;
-	}
+.blazored-modal button {
+	margin-top: 1rem;
+	width: 47%;
+}
 
-	.blazored-modal .blazored-modal-header {
-		text-align: center;
-		display: block;
-	}
+.blazored-modal .blazored-modal-header {
+	text-align: center;
+	display: block;
+}
 
 .cancelBtn {
 	background-color: var(--red);
@@ -193,6 +197,24 @@ div#chatForm {
 .editMacro table, .editMacro th, .editMacro td {
 	border: 0px;
 }
+
+/*LoginDialog*/
+.image-cropper {
+	width: 3rem;
+	height: 3rem;
+	overflow: hidden;
+	border-radius: 50%;
+	float:right;
+}
+
+.avatar {
+	display: inline;
+	margin: 0 auto;
+	margin-left: -25%; /*centers the image*/
+	height: 100%;
+	width: auto;
+}
+
 
 /*Mod Controls*/
 .modControls {

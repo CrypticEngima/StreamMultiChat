@@ -50,9 +50,10 @@
 
 		if (!result.Cancelled)
 		{
-			var time = int.Parse(result.Data.ToString());
-
-			await DisplayService.SendMessage(DisplayMessage.Channel,$"/timeout {DisplayMessage.User} {time}");
+			if( int.TryParse(result.Data.ToString(),out var time))
+			{
+				await DisplayService.SendMessage(DisplayMessage.Channel, $"/timeout {DisplayMessage.User} {time}");
+			}
 		}
 	}
 

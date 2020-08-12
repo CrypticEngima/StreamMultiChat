@@ -1,5 +1,6 @@
 ﻿@page "/"
-
+@inject NavigationManager NavManager
+@inject AuthenticationService AuthenticationService
 	<main>
 		<h1>Welcome To</h1>
 		<h1>Stream Multi Chat</h1>
@@ -18,3 +19,23 @@
 			</form>
 		</div>
 	</main>
+
+@code{ 
+
+	protected async override Task OnInitializedAsync()
+	{
+		GetQueryStringForAuthentication();
+		await base.InvokeAsync(StateHasChanged);
+	}
+
+	void GetQueryStringForAuthentication()
+	{
+		var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+		var fragment = uri.Fragment;
+		if (!string.IsNullOrEmpty(fragment))
+		{
+			AuthenticationService.ResponseReceived(fragment);
+			NavManager.NavigateTo(NavManager.BaseUri);
+		}
+	}
+	//}

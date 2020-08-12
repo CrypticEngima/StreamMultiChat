@@ -21,6 +21,7 @@ namespace StreamMultiChat.Blazor.Services
 	{
 		private readonly TwitchSettings _settings;
 		private readonly ILogger<TwitchService> _logger;
+		private readonly AuthenticationService _authenticationService;
 		private TwitchClient _client;
 		private bool _correctlyConnected = false;
 
@@ -29,10 +30,11 @@ namespace StreamMultiChat.Blazor.Services
 		public event EventHandler<ChatMessageReceivedEventArgs> OnMessageReceived;
 		public event EventHandler<ModReceivedEventArgs> OnModReceived;
 
-		public TwitchService(IOptions<TwitchSettings> settings, ILogger<TwitchService> logger)
+		public TwitchService(TwitchSettings settings, ILogger<TwitchService> logger, AuthenticationService authenticationService)
 		{
-			_settings = settings.Value;
+			_settings = settings;
 			_logger = logger;
+			_authenticationService = authenticationService;
 
 			CreateClient();
 			if (_client != null)
@@ -41,6 +43,7 @@ namespace StreamMultiChat.Blazor.Services
 				Initialize(creds);
 				ConfigureHandlers();
 			}
+			
 		}
 
 		public void Connect()
@@ -101,7 +104,8 @@ namespace StreamMultiChat.Blazor.Services
 
 		private ConnectionCredentials CreateCredentials()
 		{
-			return new ConnectionCredentials(_settings.Username, _settings.Token);
+			return new ConnectionCredentials(_authenticationService.TwitchUser.login,_authenticationService.Token);
+			//return new ConnectionCredentials(_settings.Username, _settings.Token);
 		}
 
 		private void CreateClient()
@@ -130,8 +134,6 @@ namespace StreamMultiChat.Blazor.Services
 				_client.OnModeratorsReceived += ModeratorReceived;
 			}
 		}
-
-		
 
 		private void OnConnected(object sender, OnConnectedArgs args)
 		{
