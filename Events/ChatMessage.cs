@@ -1,4 +1,6 @@
-﻿namespace StreamMultiChat.Blazor.Events
+﻿using System;
+
+namespace StreamMultiChat.Blazor.Events
 {
 	public class ChatMessage
 	{
@@ -33,5 +35,11 @@
 		public bool IsHighlighted { get; }
 		public string UserId { get; }
 		public string Username { get; }
+
+		public override string ToString()
+		{
+			return $"{DateTime.Now:t}   [{Channel}] ({Username}) : {Message}";
+		}
 	}
+	
 }
