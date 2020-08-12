@@ -2,7 +2,8 @@
 
 @inject AuthenticationService AuthenticationService
 @inject NavigationManager NavManager
-@inject DisplayService DisplayService
+@inject ChannelService ChannelService
+@inject MacroService MacroService
 @inject IJSRuntime JSRuntime
 
 <main>
@@ -14,7 +15,7 @@
 			{
 				<li>
 					@displayMessage.Message 
-					@if (displayMessage.ModControls) { <ModComponent DisplayMessage="displayMessage" DisplayService="DisplayService"/> }</li>
+					@if (displayMessage.ModControls) { <ModComponent DisplayMessage="displayMessage" ChannelService="ChannelService" MacroService="MacroService"/> }</li>
 			}
 			<li id="anchor"></li>
 		</ul>
@@ -29,7 +30,7 @@
 		<label for="sel_send">Channel to send message.</label>
 		<select id="sel_send" class="form-control d-flex" name="sel_send" @bind="SelectedValue">
 			<option value="" disabled selected hidden>Please choose channel...</option>
-			@foreach (var channel in DisplayService.Channels)
+			@foreach (var channel in ChannelService.Channels)
 			{
 				<option value=@channel.Id>@channel.Id</option>
 			}
@@ -56,11 +57,11 @@
 			NavManager.NavigateTo(NavManager.BaseUri);
 		}
 
-		DisplayService.OnMessageReceived += RecieveMessage;
+		ChannelService.OnMessageReceived += RecieveMessage;
 
 		await AddChannels();
-		await DisplayService.JoinChannels();
-		SelectedValue = DisplayService.AllChannel.Id;
+		await ChannelService.JoinChannels();
+		SelectedValue = ChannelService.AllChannel.Id;
 	}
 
 	async Task AddChannels()
@@ -71,7 +72,7 @@
 			var channels = _channels.ToString().Split(',');
 			foreach (var channel in channels)
 			{
-				await DisplayService.AddChannel(channel);
+				await ChannelService.AddChannel(channel);
 			}
 		}
 		await base.InvokeAsync(StateHasChanged);
@@ -93,8 +94,8 @@
 
 	async Task SendMessage()
 	{
-		var channel = await DisplayService.GetChannel(SelectedValue);
-		var msg = await DisplayService.SendMessage(channel,Message);
+		var channel = await ChannelService.GetChannel(SelectedValue);
+		var msg = await channel.SendMessage(Message,MacroService.GetAllMacros());
 		Messages.AddRange(msg);
 		Message = "";
 		await base.InvokeAsync(StateHasChanged);
@@ -111,7 +112,7 @@
 			var chans = result.Data.ToString().Split(',');
 			foreach (var item in chans)
 			{
-				await DisplayService.AddChannel(item);
+				await ChannelService.AddChannel(item);
 			}
 			await base.InvokeAsync(StateHasChanged);
 		}
@@ -120,24 +121,23 @@
 	async void ShowLeaveDialog()
 	{
 		var parameters = new ModalParameters();
-		parameters.Add(nameof(DisplayService), DisplayService);
+		parameters.Add(nameof(ChannelService), ChannelService);
 
 		var modalResponse = Modal.Show<LeaveChannelDialog>("Leave Channel", parameters);
 		var result = await modalResponse.Result;
 
-
 		if (!result.Cancelled)
 		{
-			await DisplayService.RemoveChannel((Channel)result.Data);
+			await ChannelService.RemoveChannel((Channel)result.Data);
 			await base.InvokeAsync(StateHasChanged);
 		}
-
 	}
 
 	async void ShowMacroManagementDialog()
 	{
 		var parameters = new ModalParameters();
-		parameters.Add(nameof(DisplayService), DisplayService);
+		parameters.Add(nameof(MacroService), MacroService);
+		parameters.Add(nameof(ChannelService), ChannelService);
 
 		var modalResponse = Modal.Show<MacroManagementDialog>("Macro Management", parameters);
 		var result = await modalResponse.Result;
@@ -147,7 +147,6 @@
 		{
 			await base.InvokeAsync(StateHasChanged);
 		}
-
 	}
 
 	async void DownloadFile()
@@ -155,7 +154,7 @@
 		await JSRuntime.InvokeAsync<object>(
 			"FileSaveAs",
 			"macros.json",
-			JsonSerializer.Serialize(await DisplayService.GetAllMacros())
+			JsonSerializer.Serialize(MacroService.GetAllMacros())
 		);
 	}
 }
