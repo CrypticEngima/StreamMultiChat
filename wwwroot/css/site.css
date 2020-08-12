@@ -34,7 +34,8 @@ div.top-row {
 	width: 100%;
 	text-align:right;
 	align-content:center;
-	float:left;
+	display:flex;
+	justify-content:flex-end;
 }
 
 
@@ -213,7 +214,6 @@ div#chatForm {
 	height: 3rem;
 	overflow: hidden;
 	border-radius: 50%;
-	float:right;
 }
 
 .avatar {
