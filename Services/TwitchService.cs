@@ -19,7 +19,6 @@ namespace StreamMultiChat.Blazor.Services
 {
 	public class TwitchService
 	{
-		private readonly TwitchSettings _settings;
 		private readonly ILogger<TwitchService> _logger;
 		private readonly AuthenticationService _authenticationService;
 		private TwitchClient _client;
@@ -30,9 +29,8 @@ namespace StreamMultiChat.Blazor.Services
 		public event EventHandler<ChatMessageReceivedEventArgs> OnMessageReceived;
 		public event EventHandler<ModReceivedEventArgs> OnModReceived;
 
-		public TwitchService(TwitchSettings settings, ILogger<TwitchService> logger, AuthenticationService authenticationService)
+		public TwitchService(ILogger<TwitchService> logger, AuthenticationService authenticationService)
 		{
-			_settings = settings;
 			_logger = logger;
 			_authenticationService = authenticationService;
 
@@ -99,13 +97,12 @@ namespace StreamMultiChat.Blazor.Services
 		{
 			_client.SendMessage(channel, message);
 			_logger.LogInformation($"Sending to {channel} the Message : {message}");
-			return new ChatMessage(message, false, false, false, false, false, 0, null, channel, 0, false, null, _settings.Username);
+			return new ChatMessage(message, false, false, false, false, false, 0, null, channel, 0, false, null, _authenticationService.TwitchUser.login);
 		}
 
 		private ConnectionCredentials CreateCredentials()
 		{
 			return new ConnectionCredentials(_authenticationService.TwitchUser.login,_authenticationService.Token);
-			//return new ConnectionCredentials(_settings.Username, _settings.Token);
 		}
 
 		private void CreateClient()

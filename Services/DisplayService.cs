@@ -12,27 +12,28 @@ namespace StreamMultiChat.Blazor.Services
 {
 	public class DisplayService
 	{
-		public IList<Channel> Channels { get; } = new List<Channel>();
-		public Channel AllChannel { get; }
-
+		private readonly AuthenticationService AuthenticationService;
 		private IList<Macro> Macros = new List<Macro>();
 		private TwitchService _twitchService;
-		private TwitchSettings _twitchSettings;
 
+		public IList<Channel> Channels { get; } = new List<Channel>();
+		public Channel AllChannel { get; }
+		
 		public event EventHandler<DisplayMessage> OnMessageReceived;
 
-		public DisplayService(TwitchService twitchService,TwitchSettings settings)
+		public DisplayService(TwitchService twitchService, AuthenticationService authenticationService)
 		{
 			_twitchService = twitchService;
-			_twitchSettings = settings;
+
 			Channels.Add(new Channel("All"));
 			AllChannel = Channels.FirstOrDefault(c => c.Id == "All");
 			_twitchService.OnMessageReceived += ReceiveMessageHandler;
 			_twitchService.OnModReceived += ReceiveModHandler;
 			_twitchService.Connect();
+			AuthenticationService = authenticationService;
 		}
 
-		
+
 
 		public async Task<Channel> GetChannel(string channelId)
 		{
@@ -93,7 +94,7 @@ namespace StreamMultiChat.Blazor.Services
 			var channel = GetChannel(e.ChatMessage.Channel).Result;
 
 			var msg = FormatMessageForDisplay(e.ChatMessage);
-			MessageReceived(msg, channel.IsModerator(_twitchSettings.Username),channel,e.ChatMessage.Username);
+			MessageReceived(msg, channel.IsModerator(AuthenticationService.TwitchUser.login),channel,e.ChatMessage.Username);
 
 		}
 
@@ -131,7 +132,7 @@ namespace StreamMultiChat.Blazor.Services
 			foreach (var messageToSend in messages)
 			{
 				var sentMessage = _twitchService.SendMessage(messageToSend.Channel, messageToSend.message);
-				var displayMessage = new DisplayMessage(FormatMessageForDisplay(sentMessage), channel.IsModerator(_twitchSettings.Username), channel,_twitchSettings.Username);
+				var displayMessage = new DisplayMessage(FormatMessageForDisplay(sentMessage), channel.IsModerator(AuthenticationService.TwitchUser.login), channel, AuthenticationService.TwitchUser.login);
 				returnMessages.Add(displayMessage);
 			}
 

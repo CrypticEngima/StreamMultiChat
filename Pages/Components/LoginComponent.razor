@@ -1,5 +1,6 @@
 ﻿@inject AuthenticationService AuthenticationService
 @inject TwitchSettings TwitchSettings
+@inject NavigationManager NavManager
 
 <a class="btn btn-primary btn-twitch @(AuthenticationService.IsAuthenticated?"hidden":"")" href="@Uri">Twitch Login</a>
 <div class="image-cropper">
@@ -17,6 +18,19 @@
 		url += $"&scope=chat:read+chat:edit+channel:moderate+user:read:email";
 		//url += $"&scope=chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor+user:read:email";
 		Uri = url;
+
+		GetQueryStringForAuthentication();
 		return Task.CompletedTask;
+	}
+
+	void GetQueryStringForAuthentication()
+	{
+		var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+		var fragment = uri.Fragment;
+		if (!string.IsNullOrEmpty(fragment))
+		{
+			AuthenticationService.ResponseReceived(fragment);
+			NavManager.NavigateTo(NavManager.BaseUri);
+		}
 	}
 }

@@ -1,41 +1,26 @@
 ﻿@page "/"
 @inject NavigationManager NavManager
 @inject AuthenticationService AuthenticationService
-	<main>
-		<h1>Welcome To</h1>
-		<h1>Stream Multi Chat</h1>
-		<div id="indexContent">
-			<div>
-				Stream Multi Chat allows you to connect to more than one twitch stream chat at once. You can also send messages to one or all channels to make life easy.
-			</div>
+<main>
+	<h1>Welcome To</h1>
+	<h1>Stream Multi Chat</h1>
+	<div id="indexContent">
+		<div>
+			Stream Multi Chat allows you to connect to more than one twitch stream chat at once. You can also send messages to one or all channels to make life easy.
+		</div>
+		<div class="@(AuthenticationService.IsAuthenticated?"":"hidden")">
 			<div>
 				Please enter the channels you wish to connect to in the box below using commas to seperate them.
 			</div>
 
 			<form action="/chat" class="text-center" method="get" id="formChat">
 				<label for="channels">Channels to connect to?</label>
-				<input class="form-control" type="text" id="channels" name="channels" placeholder="channel1,channel2,channel3,etc" required/>
-				<button class="btn btn-primary" id="chatsubmit" name="chatsubmit" type="submit" >Chat</button>
+				<input class="form-control" type="text" id="channels" name="channels" placeholder="channel1,channel2,channel3,etc" required />
+				<button class="btn btn-primary" id="chatsubmit" name="chatsubmit" type="submit">Chat</button>
 			</form>
 		</div>
-	</main>
-
-@code{ 
-
-	protected async override Task OnInitializedAsync()
-	{
-		GetQueryStringForAuthentication();
-		await base.InvokeAsync(StateHasChanged);
-	}
-
-	void GetQueryStringForAuthentication()
-	{
-		var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
-		var fragment = uri.Fragment;
-		if (!string.IsNullOrEmpty(fragment))
-		{
-			AuthenticationService.ResponseReceived(fragment);
-			NavManager.NavigateTo(NavManager.BaseUri);
-		}
-	}
-	//}
+		<div class="@(AuthenticationService.IsAuthenticated?"hidden":"")">
+			Please Login using the Twitch Button above!!!
+		</div>
+	</div>
+</main>

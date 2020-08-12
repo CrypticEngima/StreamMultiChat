@@ -1,5 +1,6 @@
 ﻿@page "/chat"
 
+@inject AuthenticationService AuthenticationService
 @inject NavigationManager NavManager
 @inject DisplayService DisplayService
 @inject IJSRuntime JSRuntime
@@ -15,6 +16,7 @@
 					@displayMessage.Message 
 					@if (displayMessage.ModControls) { <ModComponent DisplayMessage="displayMessage" DisplayService="DisplayService"/> }</li>
 			}
+			<li id="anchor"></li>
 		</ul>
 	</div>
 	<div id="controlButtons">
@@ -48,6 +50,11 @@
 	protected override async Task OnInitializedAsync()
 	{
 		base.OnInitialized();
+
+		if(!AuthenticationService.IsAuthenticated)
+		{
+			NavManager.NavigateTo(NavManager.BaseUri);
+		}
 
 		DisplayService.OnMessageReceived += RecieveMessage;
 

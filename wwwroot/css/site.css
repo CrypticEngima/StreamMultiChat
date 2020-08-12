@@ -124,6 +124,15 @@ ul {
 	padding: 0;
 }
 
+#messagesList * {
+	overflow-anchor: none;
+}
+
+#anchor{
+	overflow-anchor:auto;
+	height:1px;
+}
+
 li {
 	width: 100%;
 	display: flex;
