@@ -84,7 +84,9 @@ namespace StreamMultiChat.Blazor.Modals
 
 		private IEnumerable<(string channel, string message)> GenerateMessages(string message)
 		{
-			var macrosToRun = Id == "All" ? _macroService.GetAllMacros().Where(m => m.Command == message) : _macroService.GetAllMacros().Where(m => m.Command == message && m.Channel == this);
+			var macrosToRun = Id == "All" ? 
+				_macroService.GetAllMacros().Where(m => m.Command == message && m.IsEnabled) : 
+				_macroService.GetAllMacros().Where(m => m.Command == message && m.Channel == this && m.IsEnabled);
 
 			if (macrosToRun.Count() == 0)
 			{
