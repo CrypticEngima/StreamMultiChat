@@ -173,27 +173,27 @@ div#chatForm {
 	border-color: var(--red-hover);
 }
 
-	.cancelBtn:focus {
-		background-color: var(--red-hover);
-	}
+.cancelBtn:focus {
+	background-color: var(--red-hover);
+}
 
-	.cancelBtn:hover {
-		background-color: var(--red-hover);
-		border-color: var(--red-hover);
-	}
+.cancelBtn:hover {
+	background-color: var(--red-hover);
+	border-color: var(--red-hover);
+}
 
 /*MacroManagementDialog*/
 .macroMGMT {
 	text-align: left;
 }
 
-	.macroMGMT .createBtn {
-		width: 25%;
-	}
+.macroMGMT .createBtn {
+	width: 25%;
+}
 
-	.macroMGMT .closeBtn {
-		text-align: center;
-	}
+.macroMGMT .closeBtn {
+	text-align: center;
+}
 
 /*EditMacroDialog*/
 .editMacro {
@@ -210,6 +210,7 @@ div#chatForm {
 
 /*LoginDialog*/
 .image-cropper {
+	display:block;
 	width: 3rem;
 	height: 3rem;
 	overflow: hidden;

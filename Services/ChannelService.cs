@@ -41,6 +41,11 @@ namespace StreamMultiChat.Blazor.Services
 			var channel = new Channel(channelName, _twitchService, _macroService, _authenticationService);
 			channel.AddChannelString(channelName);
 
+			if(channelName != "all")
+			{
+				await channel.JoinChannel();
+			}
+
 			Channels.Add(channel);
 
 			AllChannel.AddChannelString(channelName);

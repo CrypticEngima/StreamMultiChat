@@ -40,6 +40,11 @@ namespace StreamMultiChat.Blazor.Modals
 			Moderators.AddUnique(mods);
 		}
 
+		public async Task JoinChannel()
+		{
+			await _twitchService.JoinChannel(ChannelStrings.FirstOrDefault());
+		}
+
 		public bool IsModerator()
 		{
 			bool broadcaster = false;
