@@ -1,0 +1,36 @@
+﻿@inject AuthenticationService AuthenticationService
+@inject TwitchSettings TwitchSettings
+@inject NavigationManager NavManager
+
+<a class="btn btn-primary btn-twitch @(AuthenticationService.IsAuthenticated?"hidden":"")" href="@Uri">Twitch Login</a>
+<div class="image-cropper">
+<img class="avatar @(AuthenticationService.IsAuthenticated?"":"hidden")" src="@(AuthenticationService.IsAuthenticated?AuthenticationService.TwitchUser.profile_image_url:"")" />
+</div>
+
+@code {
+	string Uri = "";
+	protected override Task OnInitializedAsync()
+	{
+		var url = "https://id.twitch.tv/oauth2/authorize?";
+		url += $"client_id={TwitchSettings.ClientId}";
+		url += $"&redirect_uri=https://localhost:5001/";
+		url += $"&response_type=token";
+		url += $"&scope=chat:read+chat:edit+channel:moderate+whispers:read+user:read:email";
+		//url += $"&scope=chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor+user:read:email";
+		Uri = url;
+
+		GetQueryStringForAuthentication();
+		return Task.CompletedTask;
+	}
+
+	void GetQueryStringForAuthentication()
+	{
+		var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+		var fragment = uri.Fragment;
+		if (!string.IsNullOrEmpty(fragment))
+		{
+			AuthenticationService.ResponseReceived(fragment);
+			NavManager.NavigateTo(NavManager.BaseUri);
+		}
+	}
+}

@@ -31,14 +31,16 @@
 
 @code{
 	[CascadingParameter] public IModalService Modal { get; set; }
-	[Parameter] public DisplayService DisplayService { get; set; }
+	[Parameter] public ChannelService ChannelService { get; set; }
 	[Parameter] public DisplayMessage DisplayMessage { get; set; }
+	[Parameter] public MacroService MacroService { get; set; }
+
 	bool UserBanned = false;
 
 	async void Delete()
 	{
 		// There is no delete command it just does 1s timeout /timeout Username 1s
-		await DisplayService.SendMessage(DisplayMessage.Channel, $"/timeout {DisplayMessage.User} 1");
+		await DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} 1");
 	}
 
 	async void Timeout()
@@ -50,16 +52,18 @@
 
 		if (!result.Cancelled)
 		{
-			var time = int.Parse(result.Data.ToString());
-
-			await DisplayService.SendMessage(DisplayMessage.Channel,$"/timeout {DisplayMessage.User} {time}");
+			if( int.TryParse(result.Data.ToString(),out var time))
+			{
+				if (time == 0) time = 300;
+				await DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} {time}");
+			}
 		}
 	}
 
 	async void Ban()
 	{
 		// /ban USERNAME,
-		await DisplayService.SendMessage(DisplayMessage.Channel, $"/ban {DisplayMessage.User}");
+		await DisplayMessage.Channel.SendMessage($"/ban {DisplayMessage.User}");
 		UserBanned = true;
 		await base.InvokeAsync(StateHasChanged);
 	}
@@ -67,7 +71,7 @@
 	async void Unban()
 	{
 		// /unban USERNAME,
-		await DisplayService.SendMessage(DisplayMessage.Channel, $"/unban {DisplayMessage.User}");
+		await DisplayMessage.Channel.SendMessage($"/unban {DisplayMessage.User}");
 		UserBanned = false;
 		await base.InvokeAsync(StateHasChanged);
 	}

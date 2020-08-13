@@ -30,7 +30,7 @@
 				</td>
 				<td>
 					<select id="channel" name="channel" class="form-control"  @bind="Channel">
-						@foreach (var channel in DisplayService.Channels)
+						@foreach (var channel in ChannelService.Channels)
 						{
 							<option value="@channel.Id">@channel.Id</option>
 						}
@@ -47,7 +47,7 @@
 @code {
 	[CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
 	[Parameter] public Macro Macro { get; set; }
-	[Parameter] public DisplayService DisplayService { get; set; }
+	[Parameter] public ChannelService ChannelService { get; set; }
 	bool IsEnabled;
 	string Command;
 	string Response;
@@ -78,7 +78,7 @@
 			IsEnabled = IsEnabled,
 			Command = Command,
 			Response = Response,
-			Channel = await DisplayService.GetChannel(Channel)
+			Channel = await ChannelService.GetChannel(Channel)
 		};
 
 		await BlazoredModal.Close(ModalResult.Ok(macroToReturn));

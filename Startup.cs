@@ -28,7 +28,10 @@ namespace StreamMultiChat.Blazor
 			services.AddLogging();
 
 			services.AddSingleton<TwitchService>();
-			services.AddSingleton<DisplayService>();
+			services.AddSingleton<ChannelService>();
+			services.AddSingleton<AuthenticationService>();
+			services.AddSingleton<MacroService>();
+			services.AddHttpClient();
 			services.AddRazorPages();
 			services.AddServerSideBlazor();
 			services.AddSignalR();

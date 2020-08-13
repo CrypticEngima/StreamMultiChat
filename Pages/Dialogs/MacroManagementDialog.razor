@@ -11,7 +11,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var macro in DisplayService.GetAllMacros().Result)
+			@foreach (var macro in MacroService.GetAllMacros())
 			{
 				<tr>
 
@@ -45,12 +45,13 @@
 @code {
 	[CascadingParameter] public IModalService Modal { get; set; }
 	[CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
-	[Parameter] public  DisplayService DisplayService { get; set; }
+	[Parameter] public MacroService MacroService { get; set; }
+	[Parameter] public ChannelService ChannelService { get; set; }
 
 	async Task Create()
 	{
 		var parameters = new ModalParameters();
-		parameters.Add(nameof(DisplayService), DisplayService);
+		parameters.Add(nameof(ChannelService), ChannelService);
 
 		var modalResponse = Modal.Show<EditMacroDialog>("Create Macro", parameters);
 		var result = await modalResponse.Result;
@@ -58,7 +59,7 @@
 
 		if (!result.Cancelled)
 		{
-			await DisplayService.AddMacro((Macro)result.Data);
+			await MacroService.AddMacro((Macro)result.Data);
 			await base.InvokeAsync(StateHasChanged);
 		}
 	}
@@ -67,7 +68,7 @@
 	{
 		var parameters = new ModalParameters();
 		parameters.Add("Macro", macro);
-		parameters.Add(nameof(DisplayService), DisplayService);
+		parameters.Add(nameof(ChannelService), ChannelService);
 
 		var modalResponse = Modal.Show<EditMacroDialog>("Edit Macro",parameters);
 		var result = await modalResponse.Result;
@@ -75,8 +76,8 @@
 
 		if (!result.Cancelled)
 		{
-			await DisplayService.RemoveMacro(macro);
-			await DisplayService.AddMacro((Macro)result.Data);
+			await MacroService.RemoveMacro(macro);
+			await MacroService.AddMacro((Macro)result.Data);
 			await base.InvokeAsync(StateHasChanged);
 		}
 	}
@@ -89,7 +90,7 @@
 
 		if (!result.Cancelled)
 		{
-			await DisplayService.RemoveMacro(macro);
+			await MacroService.RemoveMacro(macro);
 			await base.InvokeAsync(StateHasChanged);
 		}
 	}

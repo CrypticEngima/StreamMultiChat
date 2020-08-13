@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using StreamMultiChat.Blazor.Events;
-using StreamMultiChat.Blazor.Modals;
-using StreamMultiChat.Blazor.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,13 +11,14 @@ using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
 using ChatMessage = StreamMultiChat.Blazor.Events.ChatMessage;
+using WhisperMessage = StreamMultiChat.Blazor.Events.WhisperMessage;
 
 namespace StreamMultiChat.Blazor.Services
 {
 	public class TwitchService
 	{
-		private readonly TwitchSettings _settings;
 		private readonly ILogger<TwitchService> _logger;
+		private readonly AuthenticationService _authenticationService;
 		private TwitchClient _client;
 		private bool _correctlyConnected = false;
 
@@ -27,11 +26,12 @@ namespace StreamMultiChat.Blazor.Services
 
 		public event EventHandler<ChatMessageReceivedEventArgs> OnMessageReceived;
 		public event EventHandler<ModReceivedEventArgs> OnModReceived;
+		public event EventHandler<WhisperReceivedEventArgs> OnWhisperReceived;
 
-		public TwitchService(TwitchSettings settings, ILogger<TwitchService> logger)
+		public TwitchService(ILogger<TwitchService> logger, AuthenticationService authenticationService)
 		{
-			_settings = settings;
 			_logger = logger;
+			_authenticationService = authenticationService;
 
 			CreateClient();
 			if (_client != null)
@@ -40,20 +40,21 @@ namespace StreamMultiChat.Blazor.Services
 				Initialize(creds);
 				ConfigureHandlers();
 			}
+			
 		}
 
-		public void Connect()
+		public async void  Connect()
 		{
 			if (_client != null)
 			{
-				_client.Connect();
-				_logger.LogInformation("Connecting to Twitch");
+				await Task.Run(() => _client.Connect());
+				await Task.Run(() => _logger.LogInformation("Connecting to Twitch"));
 			}
 		}
 
-		public void Disconnect()
+		public async Task Disconnect()
 		{
-			_client.Disconnect();
+			await Task.Run(() => _client.Disconnect());
 		}
 
 		public async Task JoinChannel(List<string> channelStrings)
@@ -71,9 +72,9 @@ namespace StreamMultiChat.Blazor.Services
 				var clientChannel = _client.JoinedChannels.Where(c => c.Channel.ToLower() == channel.ToLower()).FirstOrDefault();
 				if (clientChannel is null)
 				{
-					_client.JoinChannel(channel);
-					_logger.LogInformation($"Joined channel : {channel}");
-					_logger.LogInformation($"Current joined channels Count: {_client.JoinedChannels.Count()}");
+					await Task.Run(() => _client.JoinChannel(channel));
+					await Task.Run(() => _logger.LogInformation($"Joined channel : {channel}"));
+					await Task.Run(() => _logger.LogInformation($"Current joined channels Count: {_client.JoinedChannels.Count()}"));
 				}
 			}
 			else
@@ -83,24 +84,25 @@ namespace StreamMultiChat.Blazor.Services
 			}
 		}
 
-		public Task LeaveChannel(string channel)
+		public async Task LeaveChannel(string channel)
 		{
-			_client.LeaveChannel(channel);
-			_logger.LogInformation($"Left channel : {channel}");
-			return Task.CompletedTask;
+			await Task.Run(() => _client.LeaveChannel(channel));
+			await Task.Run(() => _logger.LogInformation($"Left channel : {channel}"));
 		}
 
 		
-		public ChatMessage SendMessage(string channel, string message)
+		public async Task<ChatMessage> SendMessage(string channel, string message)
 		{
-			_client.SendMessage(channel, message);
-			_logger.LogInformation($"Sending to {channel} the Message : {message}");
-			return new ChatMessage(message, false, false, false, false, false, 0, null, channel, 0, false, null, _settings.Username);
+			await Task.Run(() => _client.SendMessage(channel, message));
+
+			await Task.Run(() => _logger.LogInformation($"Sending to {channel} the Message : {message}"));
+
+			return new ChatMessage(message, false, false, false, false, false, 0, null, channel, 0, false, null, _authenticationService.TwitchUser.login);
 		}
 
 		private ConnectionCredentials CreateCredentials()
 		{
-			return new ConnectionCredentials(_settings.Username, _settings.Token);
+			return new ConnectionCredentials(_authenticationService.TwitchUser.login,_authenticationService.Token);
 		}
 
 		private void CreateClient()
@@ -127,11 +129,11 @@ namespace StreamMultiChat.Blazor.Services
 				_client.OnConnected += OnConnected;
 				_client.OnMessageReceived += MessageReceived;
 				_client.OnModeratorsReceived += ModeratorReceived;
+				_client.OnWhisperReceived += WhisperReceived;
 			}
 		}
 
 		
-
 		private void OnConnected(object sender, OnConnectedArgs args)
 		{
 			_logger.LogInformation($"Connection To Twitch Started.");
@@ -144,33 +146,53 @@ namespace StreamMultiChat.Blazor.Services
 			OnMessageReceived.Invoke(this, e);
 		}
 
-		private void MessageReceived(object sender, OnMessageReceivedArgs args)
+		private void MessageReceived(object sender, OnMessageReceivedArgs e)
 		{
 
-			_logger.LogInformation($"Message Received from Chat user : {args.ChatMessage.Username} message: {args.ChatMessage.Message}");
+			Task.Run (() => _logger.LogInformation($"Message Received from Chat user : {e.ChatMessage.Username} message: {e.ChatMessage.Message}"));
 
 			var eventArgs = new ChatMessageReceivedEventArgs(new ChatMessage(
-					args.ChatMessage.Message,
-					args.ChatMessage.IsVip,
-					args.ChatMessage.IsSubscriber,
-					args.ChatMessage.IsModerator,
-					args.ChatMessage.IsMe,
-					args.ChatMessage.IsBroadcaster,
-					args.ChatMessage.SubscribedMonthCount,
-					args.ChatMessage.Id,
-					args.ChatMessage.Channel,
-					args.ChatMessage.Bits,
-					args.ChatMessage.IsHighlighted,
-					args.ChatMessage.UserId,
-					args.ChatMessage.Username
+					e.ChatMessage.Message,
+					e.ChatMessage.IsVip,
+					e.ChatMessage.IsSubscriber,
+					e.ChatMessage.IsModerator,
+					e.ChatMessage.IsMe,
+					e.ChatMessage.IsBroadcaster,
+					e.ChatMessage.SubscribedMonthCount,
+					e.ChatMessage.Id,
+					e.ChatMessage.Channel,
+					e.ChatMessage.Bits,
+					e.ChatMessage.IsHighlighted,
+					e.ChatMessage.UserId,
+					e.ChatMessage.Username
 					));
 
 			MessageReceived(eventArgs);
 		}
 
-		 public  void GetModerators(string channel)
+		private void WhisperReceived(WhisperReceivedEventArgs e)
 		{
-			_client.GetChannelModerators(channel);
+			OnWhisperReceived.Invoke(this, e);
+		}
+
+		private void WhisperReceived(object sender, OnWhisperReceivedArgs e)
+		{
+			Task.Run(() => _logger.LogInformation($"Message Received from Chat user : {e.WhisperMessage.Username} message: {e.WhisperMessage.Message}"));
+
+			var eventArgs = new WhisperReceivedEventArgs(new WhisperMessage(
+					e.WhisperMessage.Message,
+					e.WhisperMessage.UserId,
+					e.WhisperMessage.Username,
+					e.WhisperMessage.DisplayName
+					));
+
+			WhisperReceived(eventArgs);
+		}
+
+
+		public async Task GetModerators(string channel)
+		{
+			await Task.Run(() => _client.GetChannelModerators(channel));
 		}
 
 		private void ModeratorReceived(object sender, OnModeratorsReceivedArgs e)
