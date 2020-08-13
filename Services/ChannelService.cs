@@ -17,6 +17,7 @@ namespace StreamMultiChat.Blazor.Services
 		public Channel AllChannel { get; }
 
 		public event EventHandler<DisplayMessage> OnMessageReceived;
+		
 
 		public ChannelService(TwitchService twitchService, AuthenticationService authenticationService, MacroService macroService)
 		{
@@ -28,8 +29,11 @@ namespace StreamMultiChat.Blazor.Services
 			AllChannel = Channels.FirstOrDefault(c => c.Id == "all");
 			_twitchService.OnMessageReceived += ReceiveMessageHandler;
 			_twitchService.OnModReceived += ReceiveModHandler;
+			_twitchService.OnWhisperReceived += WhisperRecieved;
 			_twitchService.Connect();
 		}
+
+		
 
 		public async Task<Channel> GetChannel(string channelId)
 		{
@@ -73,7 +77,7 @@ namespace StreamMultiChat.Blazor.Services
 			foreach (var channel in AllChannel.ChannelStrings)
 			{
 				await _twitchService.JoinChannel(channel);
-				_twitchService.GetModerators(channel);
+				await _twitchService.GetModerators(channel);
 			}
 		}
 
@@ -82,8 +86,10 @@ namespace StreamMultiChat.Blazor.Services
 			var channel = GetChannel(e.Channel).Result;
 			channel.AddModerators(e.Mods);
 		}
-
-
+		private void WhisperRecieved(object sender, WhisperReceivedEventArgs e)
+		{
+			MessageReceived(e.WhisperMessage.ToString(), false, null, e.WhisperMessage.Username);
+		}
 
 		private void ReceiveMessageHandler(object sender, ChatMessageReceivedEventArgs e)
 		{
