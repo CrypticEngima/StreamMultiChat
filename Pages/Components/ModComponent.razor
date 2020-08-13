@@ -40,7 +40,7 @@
 	void Delete()
 	{
 		// There is no delete command it just does 1s timeout /timeout Username 1s
-		 DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} 1");
+		DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} 1");
 	}
 
 	async void Timeout()
@@ -54,6 +54,7 @@
 		{
 			if( int.TryParse(result.Data.ToString(),out var time))
 			{
+				if (time == 0) time = 300;
 				DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} {time}");
 			}
 		}

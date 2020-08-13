@@ -57,19 +57,28 @@ namespace StreamMultiChat.Blazor.Modals
 			return Moderators.Contains(_authenticationService.TwitchUser.login) || broadcaster;
 		}
 
-		public IEnumerable<DisplayMessage> SendMessage(string message)
+		public Task<List<DisplayMessage>> SendMessage(string message)
 		{
+			var messagesReturn = new List<DisplayMessage>();
+
+			System.Console.WriteLine("entered send message on channel");
 			foreach (var messageToSend in GenerateMessages(message))
 			{
 				var sentMessage = _twitchService.SendMessage(messageToSend.channel, messageToSend.message);
+				
+				
 				var displayMessage = new DisplayMessage(sentMessage.ToString(), IsModerator(), this, sentMessage.Username);
 
-				yield return displayMessage;
+				messagesReturn.Add(displayMessage);
 			}
+
+			return Task.FromResult(messagesReturn);
 		}
 
 		private IEnumerable<(string channel, string message)> GenerateMessages(string message)
 		{
+			List<(string channel, string message)> macrosReturn = new List<(string channel, string message)>();
+
 			var macrosToRun = Id == "all" ? 
 				_macroService.GetMacroByCommand(message) : 
 				_macroService.GetMacrosByChannelCommand(this, message);
@@ -78,7 +87,7 @@ namespace StreamMultiChat.Blazor.Modals
 			{
 				foreach (var channelString in ChannelStrings)
 				{
-					yield return (channelString, message);
+					macrosReturn.Add((channelString, message));
 				}
 			}
 			else
@@ -88,10 +97,12 @@ namespace StreamMultiChat.Blazor.Modals
 					foreach (var macro in macrosToRun)
 					{
 						if (macro.Channel.ChannelStrings.Contains(channelString))
-						yield return (channelString, macro.Response);
+							macrosReturn.Add((channelString, macro.Response));
 					}
 				}
 			}
+
+			return macrosReturn;
 		}
 	}
 }
