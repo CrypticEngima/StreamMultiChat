@@ -36,26 +36,29 @@ namespace StreamMultiChat.Blazor.Services
 			return await Task.FromResult(Channels.FirstOrDefault(c => c.Id == channelId));
 		}
 
-		public async Task AddChannel(string channelName)
+		private bool CheckForChannel(string channelName)
 		{
-			var channel = new Channel(channelName, _twitchService, _macroService, _authenticationService);
-			channel.AddChannelString(channelName);
-
-			if(channelName != "all")
-			{
-				await channel.JoinChannel();
-			}
-
-			Channels.Add(channel);
-
-			AllChannel.AddChannelString(channelName);
-			await Task.CompletedTask;
+			var channelCount = Channels.Where(c => c.Id == channelName).Count();
+			return channelCount > 0 ? true : false;
 		}
 
-		public async Task RemoveChannel(string ChannelName)
+		public async Task AddChannel(string channelName)
 		{
-			var channel = Channels.FirstOrDefault(c => c.Id == ChannelName);
-			await RemoveChannel(channel);
+			if (!CheckForChannel(channelName))
+			{
+				var channel = new Channel(channelName, _twitchService, _macroService, _authenticationService);
+				channel.AddChannelString(channelName);
+
+				if (channelName != "all")
+				{
+					await channel.JoinChannel();
+				}
+
+				Channels.Add(channel);
+
+				AllChannel.AddChannelString(channelName);
+			}
+			await Task.CompletedTask;
 		}
 
 		public async Task RemoveChannel(Channel channel)
