@@ -37,10 +37,10 @@
 
 	bool UserBanned = false;
 
-	void Delete()
+	async void Delete()
 	{
 		// There is no delete command it just does 1s timeout /timeout Username 1s
-		DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} 1");
+		await DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} 1");
 	}
 
 	async void Timeout()
@@ -55,7 +55,7 @@
 			if( int.TryParse(result.Data.ToString(),out var time))
 			{
 				if (time == 0) time = 300;
-				DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} {time}");
+				await DisplayMessage.Channel.SendMessage($"/timeout {DisplayMessage.User} {time}");
 			}
 		}
 	}
@@ -63,7 +63,7 @@
 	async void Ban()
 	{
 		// /ban USERNAME,
-		DisplayMessage.Channel.SendMessage($"/ban {DisplayMessage.User}");
+		await DisplayMessage.Channel.SendMessage($"/ban {DisplayMessage.User}");
 		UserBanned = true;
 		await base.InvokeAsync(StateHasChanged);
 	}
@@ -71,7 +71,7 @@
 	async void Unban()
 	{
 		// /unban USERNAME,
-		DisplayMessage.Channel.SendMessage($"/unban {DisplayMessage.User}");
+		await DisplayMessage.Channel.SendMessage($"/unban {DisplayMessage.User}");
 		UserBanned = false;
 		await base.InvokeAsync(StateHasChanged);
 	}

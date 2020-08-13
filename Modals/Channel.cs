@@ -57,22 +57,20 @@ namespace StreamMultiChat.Blazor.Modals
 			return Moderators.Contains(_authenticationService.TwitchUser.login) || broadcaster;
 		}
 
-		public Task<List<DisplayMessage>> SendMessage(string message)
+		public async Task<List<DisplayMessage>> SendMessage(string message)
 		{
 			var messagesReturn = new List<DisplayMessage>();
 
 			System.Console.WriteLine("entered send message on channel");
 			foreach (var messageToSend in GenerateMessages(message))
 			{
-				var sentMessage = _twitchService.SendMessage(messageToSend.channel, messageToSend.message);
-				
-				
+				var sentMessage = await _twitchService.SendMessage(messageToSend.channel, messageToSend.message);
 				var displayMessage = new DisplayMessage(sentMessage.ToString(), IsModerator(), this, sentMessage.Username);
 
 				messagesReturn.Add(displayMessage);
 			}
 
-			return Task.FromResult(messagesReturn);
+			return messagesReturn;
 		}
 
 		private IEnumerable<(string channel, string message)> GenerateMessages(string message)
