@@ -8,7 +8,12 @@ namespace StreamMultiChat.Blazor.Services
 	public class MacroService
 	{
 
-		private IList<Macro> Macros = new List<Macro>();
+		private IList<Macro> Macros;
+
+		public MacroService()
+		{
+			Macros = new List<Macro>();
+		}
 
 
 		public IEnumerable<Macro> GetAllMacros()
