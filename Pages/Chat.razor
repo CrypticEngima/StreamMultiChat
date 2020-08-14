@@ -131,6 +131,7 @@
 
 		if (!result.Cancelled)
 		{
+			await Task.Delay(500);
 			await ChannelService.RemoveChannel((Channel)result.Data);
 			await base.InvokeAsync(StateHasChanged);
 		}

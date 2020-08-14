@@ -45,6 +45,11 @@ namespace StreamMultiChat.Blazor.Modals
 			await _twitchService.JoinChannel(ChannelStrings.FirstOrDefault());
 		}
 
+		public async Task LeaveChannel()
+		{
+			await _twitchService.LeaveChannel(ChannelStrings.FirstOrDefault());
+		}
+
 		public bool IsModerator()
 		{
 			bool broadcaster = false;
@@ -102,5 +107,6 @@ namespace StreamMultiChat.Blazor.Modals
 
 			return macrosReturn;
 		}
+
 	}
 }
