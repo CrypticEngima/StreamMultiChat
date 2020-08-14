@@ -16,7 +16,7 @@
 
 	async Task Sub_Channel()
 	{
-		var channel = await ChannelService.GetChannel(SelectedValues);
+		var channel = await ChannelService.GetChannel(SelectedValues) ?? await ChannelService.GetChannel("all") ;
 		await BlazoredModal.Close(ModalResult.Ok(channel));
 	}
 }

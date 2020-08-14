@@ -67,9 +67,21 @@ namespace StreamMultiChat.Blazor.Services
 
 		public async Task RemoveChannel(Channel channel)
 		{
-			AllChannel.RemoveChannelString(channel);
-			Channels.Remove(channel);
-			await Task.CompletedTask;
+			if (channel.Id == "all")
+			{
+				foreach(Channel channel1 in Channels.Where(c => c.Id != "all").ToList())
+				{
+					await channel1.LeaveChannel();
+					AllChannel.RemoveChannelString(channel1);
+					Channels.Remove(channel1);
+				}
+			}
+			else
+			{
+				await channel.LeaveChannel();
+				AllChannel.RemoveChannelString(channel);
+				Channels.Remove(channel);
+			}
 		}
 
 		public async Task JoinChannels()
