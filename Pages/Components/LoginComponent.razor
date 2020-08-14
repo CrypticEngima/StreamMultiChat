@@ -13,7 +13,7 @@
 	{
 		var url = "https://id.twitch.tv/oauth2/authorize?";
 		url += $"client_id={TwitchSettings.ClientId}";
-		url += $"&redirect_uri=https://localhost:5001/";
+		url += $"&redirect_uri={NavManager.BaseUri}";
 		url += $"&response_type=token";
 		url += $"&scope=chat:read+chat:edit+channel:moderate+whispers:read+user:read:email";
 		//url += $"&scope=chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor+user:read:email";
